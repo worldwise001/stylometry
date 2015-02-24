@@ -2,7 +2,9 @@ __author__ = 'sharvey'
 
 import multiprocessing
 import mysql.connector
+import sys
 import time
+import traceback
 
 from corpus import Corpus
 
@@ -186,7 +188,8 @@ class MySQLCorpus(Corpus):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                pass
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                traceback.print_exception(exc_type, exc_value, exc_traceback)
 
     def select_rows(self, columns, table, condition=None, condition_params=None, limit=None, joins=None):
         query = 'SELECT %s FROM %s'
@@ -233,6 +236,8 @@ class MySQLCorpus(Corpus):
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_exception(exc_type, exc_value, exc_traceback)
                     time.sleep(2)
                     self.cnx.reconnect(10, 5)
                     chunk = int(chunk*.8)
@@ -259,7 +264,11 @@ class MySQLCorpus(Corpus):
         for atuple in tuple_list:
             while True:
                 try:
-                    cursor.execute(query, atuple)
+                    if type(atuple) is list:
+                        for aatuple in atuple:
+                            cursor.execute(query, aatuple)
+                    else:
+                        cursor.execute(query, atuple)
                     i += 1
                     if i % chunk == 0:
                         self.cnx.commit()
@@ -267,6 +276,9 @@ class MySQLCorpus(Corpus):
                 except (KeyboardInterrupt, SystemExit):
                     raise
                 except Exception as e:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_exception(exc_type, exc_value, exc_traceback)
+                    time.sleep(2)
                     self.cnx.reconnect(10, 5)
                     continue
         self.cnx.commit()

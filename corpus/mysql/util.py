@@ -75,6 +75,14 @@ def extract_pos(row, text_column):
     return (row['id'], pos)
 
 
+def discover_byte_ngrams_s(row):
+    return discover_byte_ngrams(row, 'selftext')
+
+
+def discover_byte_ngrams_c(row):
+    return discover_byte_ngrams(row, 'body')
+
+
 def discover_byte_ngrams(row, text_column):
     text = row[text_column]
     ngrams = feature.ngram.get_byte_ngrams(text)
@@ -83,6 +91,14 @@ def discover_byte_ngrams(row, text_column):
         for ngram in ngrams['ngram_byte'][n]:
             tuple_list.append((ngram, n))
     return tuple_list
+
+
+def discover_byte_cs_ngrams_s(row):
+    return discover_byte_cs_ngrams(row, 'selftext')
+
+
+def discover_byte_cs_ngrams_c(row):
+    return discover_byte_cs_ngrams(row, 'body')
 
 
 def discover_byte_cs_ngrams(row, text_column):

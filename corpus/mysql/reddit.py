@@ -124,7 +124,7 @@ class RedditMySQLCorpus(MySQLCorpus):
 
         # process comments
         src_columns = ['`id`', '`body`']
-        src_table = '`column`'
+        src_table = '`comment`'
         transform_tuple_list = [ (util.extract_stat_features_c, stat_columns, '`comment_feature_stat`'),
                                  (util.extract_read_features_c, read_columns, '`comment_feature_read`')]
         super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
@@ -132,14 +132,14 @@ class RedditMySQLCorpus(MySQLCorpus):
     def gen_byte_ngram(self):
         src_columns = ['`id`', '`selftext`']
         src_table = '`submission`'
-        transform_tuple_list = [ (util.discover_byte_ngrams, ['`gram`', '`size`'], '`byte_ngram`'),
-                                 (util.discover_byte_cs_ngrams, ['`gram`', '`size`'], '`byte_cs_ngram`') ]
+        transform_tuple_list = [ (util.discover_byte_ngrams_s, ['`gram`', '`size`'], '`byte_ngram`'),
+                                 (util.discover_byte_cs_ngrams_s, ['`gram`', '`size`'], '`byte_cs_ngram`') ]
         super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
         src_columns = ['`id`', '`body`']
         src_table = '`comment`'
-        transform_tuple_list = [ (util.discover_byte_ngrams, ['`gram`', '`size`'], '`byte_ngram`'),
-                                 (util.discover_byte_cs_ngrams, ['`gram`', '`size`'], '`byte_cs_ngram`') ]
+        transform_tuple_list = [ (util.discover_byte_ngrams_c, ['`gram`', '`size`'], '`byte_ngram`'),
+                                 (util.discover_byte_cs_ngrams_c, ['`gram`', '`size`'], '`byte_cs_ngram`') ]
         super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
         pass
