@@ -1,5 +1,6 @@
 import feature
-
+import feature.ngram
+import feature.pos
 
 def extract_stat_features_s(row):
     return extract_stat_features(row, 'selftext')
@@ -72,3 +73,35 @@ def extract_pos(row, text_column):
     text = row[text_column]
     pos = feature.pos.text_to_pos(text)
     return (row['id'], pos)
+
+
+def discover_byte_ngrams(row, text_column):
+    text = row[text_column]
+    ngrams = feature.ngram.get_byte_ngrams(text)
+    tuple_list = []
+    for n in ngrams['ngram_byte']:
+        for ngram in ngrams['ngram_byte'][n]:
+            tuple_list.append((ngram, n))
+    return tuple_list
+
+
+def discover_byte_cs_ngrams(row, text_column):
+    text = row[text_column]
+    ngrams = feature.ngram.get_byte_ngrams(text)
+    tuple_list = []
+    for n in ngrams['ngram_byte_cs']:
+        for ngram in ngrams['ngram_byte_cs'][n]:
+            tuple_list.append((ngram, n))
+    return tuple_list
+
+
+def discover_words(row, text_column):
+    text = row[text_column]
+    words = feature.ngram.get_words(text)
+    return [ (word, ) for word in words[0] ]
+
+
+def discover_words_clean(row, text_column):
+    text = row[text_column]
+    words = feature.ngram.get_words(text)
+    return [ (word, ) for word in words[1] ]

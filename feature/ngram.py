@@ -5,6 +5,11 @@ from nltk import word_tokenize
 
 import simple
 
+def get_words(text):
+    words = word_tokenize(text)
+    clean_words = simple.clean_words(words)
+    return words, clean_words
+
 
 def get_byte_ngram(text, n=2, cs=False):
     if not cs:
@@ -28,22 +33,22 @@ def get_word_ngram(text, n=2, clean=False):
 
 
 def get_word_ngrams(text):
-    ngram_dict = {}
+    ngram_dict = {'ngram_word': {}, 'ngram_word_clean': {}}
     for n in range(2, 8):
         ngrams = get_word_ngram(text, n)
-        ngram_dict['ngram_word%d' % n] = ngrams
+        ngram_dict['ngram_word'][n] = ngrams
         ngrams = get_word_ngram(text, n, True)
-        ngram_dict['ngram_word%d_clean' % n] = ngrams
+        ngram_dict['ngram_word_clean'][n] = ngrams
     return ngram_dict
 
 
 def get_byte_ngrams(text):
-    ngram_dict = {}
+    ngram_dict = {'ngram_byte': {}, 'ngram_byte_cs': {}}
     for n in range(2, 8):
         ngrams = get_byte_ngram(text, n)
-        ngram_dict['ngram_byte%d' % n] = ngrams
+        ngram_dict['ngram_byte'][n] = ngrams
         ngrams = get_byte_ngram(text, n, True)
-        ngram_dict['ngram_byte%d_cs' % n] = ngrams
+        ngram_dict['ngram_byte_cs'][n] = ngrams
     return ngram_dict
 
 if __name__ == '__main__':
