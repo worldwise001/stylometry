@@ -59,11 +59,14 @@ def extract_read_features(row, text_column):
                 stats['read']['lix'],
                 stats['read']['rix'])
 
+
 def extract_pos_s(row):
     return extract_pos(row, 'selftext')
 
+
 def extract_pos_c(row):
     return extract_pos(row, 'body')
+
 
 def extract_pos(row, text_column):
     text = row[text_column]
