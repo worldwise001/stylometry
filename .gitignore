@@ -4,3 +4,5 @@
 *.pyc
 **/.DS_Store
 **/.idea
+**/*.csv
+**/*.tar.gz
