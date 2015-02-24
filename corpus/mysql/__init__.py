@@ -169,9 +169,9 @@ class MySQLCorpus(Corpus):
         self.cnx.commit()
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_pos` (
-          `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY,
           `pos` TEXT,
-          FOREIGN KEY (`id`) REFERENCES `%s` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+          FOREIGN KEY (`id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
           );''' % (table_name, table_name))
         self.cnx.commit()
 
@@ -202,6 +202,11 @@ class MySQLCorpus(Corpus):
 
         if condition is not None:
             query += ' WHERE ' + condition
+
+        if limit is not None:
+            print(query + ' LIMIT %d, %d' % (limit[0], limit[1]))
+        else:
+            print(query)
 
         cursor = self.cnx.cursor(dictionary=True, buffered=True)
         if limit is None:
@@ -246,6 +251,8 @@ class MySQLCorpus(Corpus):
         values_txt = ','.join(values)
         query = query % (table, columns_txt, values_txt)
 
+        print(query)
+
         cursor = self.cnx.cursor(dictionary=True, buffered=True)
         chunk = 10
         i = 1
@@ -268,12 +275,9 @@ class MySQLCorpus(Corpus):
         cpus = multiprocessing.cpu_count()
         chunk = 1000
         j = 0
-        k = chunk*cpus
         while True:
-            condition = 'id >= %d AND id < %d' % (j, k)
-            rows = self.select_rows(src_columns, src_table, condition)
+            rows = self.select_rows(src_columns, src_table, limit=(j, chunk*cpus))
             if len(rows) == 0:
-                print('done')
                 break
             for ttuple in transform_tuple_list:
                 transform, dst_columns, dst_table = ttuple
@@ -286,5 +290,4 @@ class MySQLCorpus(Corpus):
                     except StopIteration:
                         break
                 self.insert_rows(dst_columns, dst_table, tuple_list)
-            j = k
-            k += chunk*cpus
+            j += chunk*cpus

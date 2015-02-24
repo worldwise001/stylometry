@@ -10,6 +10,7 @@ class Corpus(object):
         if cpu_count is None:
             cpu_count = multiprocessing.cpu_count()
         self.pool = multiprocessing.Pool(cpu_count)
+        print('Using %d cpus for processing' % cpu_count)
 
     def __del__(self):
         self.pool.close()

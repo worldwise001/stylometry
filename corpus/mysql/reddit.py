@@ -75,15 +75,17 @@ class RedditMySQLCorpus(MySQLCorpus):
 
     def gen_pos(self):
         # process submissions
+        print('Generating parts of speech for submissions')
         src_columns = ['`id`', '`selftext`']
         src_table = '`submission`'
-        transform_tuple_list = [ (util.extract_pos_s, ['`pos`'], '`submission_pos`') ]
+        transform_tuple_list = [ (util.extract_pos_s, ['`id`', '`pos`'], '`submission_pos`') ]
         super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
         # process comments
+        print('Generating parts of speech for comments')
         src_columns = ['`id`', '`body`']
         src_table = '`comment`'
-        transform_tuple_list = [ (util.extract_pos_s, ['`pos`'], '`comment_pos`') ]
+        transform_tuple_list = [ (util.extract_pos_c, ['`id`', '`pos`'], '`comment_pos`') ]
         super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
     def gen_stats(self):
