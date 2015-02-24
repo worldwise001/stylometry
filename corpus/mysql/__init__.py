@@ -56,8 +56,8 @@ class MySQLCorpus(Corpus):
           `sentence_char_length_stdev` DECIMAL(65,30) NOT NULL DEFAULT 0.0,
           FOREIGN KEY (`id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
         );''' % (table_name, table_name))
-
         self.cnx.commit()
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS `word` (
           `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
           `word` VARCHAR(190) NOT NULL UNIQUE,
@@ -93,8 +93,45 @@ class MySQLCorpus(Corpus):
           FOREIGN KEY (`%s_id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
           FOREIGN KEY (`ngram_id`) REFERENCES `feature_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
         );''' % (table_name, table_name, table_name, table_name, table_name))
-
         self.cnx.commit()
+
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `word_clean` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `word` VARCHAR(190) NOT NULL UNIQUE,
+        );''')
+        self.cnx.commit()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `word_clean_ngram` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `size` BIGINT UNSIGNED NOT NULL,
+          `n1_id` BIGINT UNSIGNED NULL,
+          `n2_id` BIGINT UNSIGNED NULL,
+          `n3_id` BIGINT UNSIGNED NULL,
+          `n4_id` BIGINT UNSIGNED NULL,
+          `n5_id` BIGINT UNSIGNED NULL,
+          `n6_id` BIGINT UNSIGNED NULL,
+          `n7_id` BIGINT UNSIGNED NULL,
+          UNIQUE `ngram` (`size`, `n1_id`, `n2_id`, `n3_id`, `n4_id`, `n5_id`, `n6_id`, `n7_id`),
+          FOREIGN KEY (`n1_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n2_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n3_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n4_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n5_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n6_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n7_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          INDEX(`size`)
+        );''')
+        self.cnx.commit()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_word_clean_ngram` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `%s_id` BIGINT UNSIGNED NOT NULL,
+          `ngram_id` BIGINT UNSIGNED NOT NULL,
+          `count` BIGINT UNSIGNED NOT NULL,
+          UNIQUE `ngram` (`%s_id`, `ngram_id`),
+          FOREIGN KEY (`%s_id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`ngram_id`) REFERENCES `feature_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+        );''' % (table_name, table_name, table_name, table_name, table_name))
+        self.cnx.commit()
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS `byte_ngram` (
           `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
           `size` BIGINT UNSIGNED NOT NULL,
@@ -103,6 +140,24 @@ class MySQLCorpus(Corpus):
         );''')
         self.cnx.commit()
         cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_byte_ngram` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `%s_id` BIGINT UNSIGNED NOT NULL,
+          `ngram_id` BIGINT UNSIGNED NOT NULL,
+          `count` BIGINT UNSIGNED NOT NULL,
+          UNIQUE `ngram` (`%s_id`, `ngram_id`),
+          FOREIGN KEY (`%s_id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`ngram_id`) REFERENCES `feature_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+        );''' % (table_name, table_name, table_name, table_name, table_name))
+        self.cnx.commit()
+
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `byte_cs_ngram` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `size` BIGINT UNSIGNED NOT NULL,
+          `gram` VARCHAR(190) NOT NULL UNIQUE,
+          INDEX(`size`)
+        );''')
+        self.cnx.commit()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_byte_cs_ngram` (
           `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
           `%s_id` BIGINT UNSIGNED NOT NULL,
           `ngram_id` BIGINT UNSIGNED NOT NULL,
