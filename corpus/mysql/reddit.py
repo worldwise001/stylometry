@@ -1,7 +1,5 @@
 __author__ = 'sharvey'
 
-import multiprocessing
-
 from corpus.mysql import MySQLCorpus
 from corpus.mysql import util
 
