@@ -91,7 +91,7 @@ class MySQLCorpus(Corpus):
           `count` BIGINT UNSIGNED NOT NULL,
           UNIQUE `ngram` (`%s_id`, `ngram_id`),
           FOREIGN KEY (`%s_id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`ngram_id`) REFERENCES `feature_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+          FOREIGN KEY (`ngram_id`) REFERENCES `word_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
         );''' % (table_name, table_name, table_name, table_name, table_name))
         self.cnx.commit()
 
@@ -111,13 +111,13 @@ class MySQLCorpus(Corpus):
           `n6_id` BIGINT UNSIGNED NULL,
           `n7_id` BIGINT UNSIGNED NULL,
           UNIQUE `ngram` (`size`, `n1_id`, `n2_id`, `n3_id`, `n4_id`, `n5_id`, `n6_id`, `n7_id`),
-          FOREIGN KEY (`n1_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`n2_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`n3_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`n4_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`n5_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`n6_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`n7_id`) REFERENCES `word` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n1_id`) REFERENCES `word_clean` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n2_id`) REFERENCES `word_clean` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n3_id`) REFERENCES `word_clean` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n4_id`) REFERENCES `word_clean` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n5_id`) REFERENCES `word_clean` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n6_id`) REFERENCES `word_clean` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+          FOREIGN KEY (`n7_id`) REFERENCES `word_clean` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
           INDEX(`size`)
         );''')
         self.cnx.commit()
@@ -128,7 +128,7 @@ class MySQLCorpus(Corpus):
           `count` BIGINT UNSIGNED NOT NULL,
           UNIQUE `ngram` (`%s_id`, `ngram_id`),
           FOREIGN KEY (`%s_id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`ngram_id`) REFERENCES `feature_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+          FOREIGN KEY (`ngram_id`) REFERENCES `word_clean_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
         );''' % (table_name, table_name, table_name, table_name, table_name))
         self.cnx.commit()
 
@@ -146,7 +146,7 @@ class MySQLCorpus(Corpus):
           `count` BIGINT UNSIGNED NOT NULL,
           UNIQUE `ngram` (`%s_id`, `ngram_id`),
           FOREIGN KEY (`%s_id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`ngram_id`) REFERENCES `feature_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+          FOREIGN KEY (`ngram_id`) REFERENCES `byte_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
         );''' % (table_name, table_name, table_name, table_name, table_name))
         self.cnx.commit()
 
@@ -164,7 +164,7 @@ class MySQLCorpus(Corpus):
           `count` BIGINT UNSIGNED NOT NULL,
           UNIQUE `ngram` (`%s_id`, `ngram_id`),
           FOREIGN KEY (`%s_id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          FOREIGN KEY (`ngram_id`) REFERENCES `feature_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+          FOREIGN KEY (`ngram_id`) REFERENCES `byte_cs_ngram` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
         );''' % (table_name, table_name, table_name, table_name, table_name))
         self.cnx.commit()
 
