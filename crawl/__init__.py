@@ -8,7 +8,7 @@ def create_crawler(type, **kwargs):
         return RedditCrawler(**kwargs)
 
 
-class Crawler:
+class Crawler(object):
     user_agent = ('corpus crawler by github.com/worldwise001')
 
     def __init__(self, user_agent=None):
