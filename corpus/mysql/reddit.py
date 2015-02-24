@@ -10,7 +10,7 @@ class RedditMySQLCorpus(MySQLCorpus):
         super(RedditMySQLCorpus, self).__init__(**kwargs)
 
     def __del__(self):
-        super(RedditMySQLCorpus, self).__del__(self)
+        super(RedditMySQLCorpus, self).__del__()
 
     def create(self):
         cursor = self.cnx.cursor()
@@ -64,7 +64,8 @@ class RedditMySQLCorpus(MySQLCorpus):
           INDEX (`edited`)
           );''')
         self.cnx.commit()
-        (RedditMySQLCorpus, self).create_feature('comment')
+        super(RedditMySQLCorpus, self).create_feature('comment')
+        super(RedditMySQLCorpus, self).create_feature('submission')
 
     def load(self, source):
         pass
@@ -76,14 +77,14 @@ class RedditMySQLCorpus(MySQLCorpus):
         # process submissions
         src_columns = ['`id`', '`selftext`']
         src_table = '`submission`'
-        transform_tuple_list = [ (util.extract_pos_s, ['`selftext_pos`'], '`submission_pos`') ]
-        (MySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
+        transform_tuple_list = [ (util.extract_pos_s, ['`pos`'], '`submission_pos`') ]
+        super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
         # process comments
         src_columns = ['`id`', '`body`']
         src_table = '`comment`'
-        transform_tuple_list = [ (util.extract_pos_s, ['`body_pos`'], '`comment_pos`') ]
-        (MySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
+        transform_tuple_list = [ (util.extract_pos_s, ['`pos`'], '`comment_pos`') ]
+        super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
     def gen_stats(self):
         read_columns = [ '`id`',
@@ -117,16 +118,28 @@ class RedditMySQLCorpus(MySQLCorpus):
         src_table = '`submission`'
         transform_tuple_list = [ (util.extract_stat_features_s, stat_columns, '`submission_feature_stat`'),
                                  (util.extract_read_features_s, read_columns, '`submission_feature_read`')]
-        (MySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
+        super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
         # process comments
         src_columns = ['`id`', '`body`']
         src_table = '`column`'
         transform_tuple_list = [ (util.extract_stat_features_c, stat_columns, '`comment_feature_stat`'),
                                  (util.extract_read_features_c, read_columns, '`comment_feature_read`')]
-        (MySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
+        super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
     def gen_byte_ngram(self):
+        src_columns = ['`id`', '`selftext`']
+        src_table = '`submission`'
+        transform_tuple_list = [ (util.discover_byte_ngrams, ['`gram`', '`size`'], '`byte_ngram`'),
+                                 (util.discover_byte_cs_ngrams, ['`gram`', '`size`'], '`byte_cs_ngram`') ]
+        super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
+
+        src_columns = ['`id`', '`body`']
+        src_table = '`comment`'
+        transform_tuple_list = [ (util.discover_byte_ngrams, ['`gram`', '`size`'], '`byte_ngram`'),
+                                 (util.discover_byte_cs_ngrams, ['`gram`', '`size`'], '`byte_cs_ngram`') ]
+        super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
+
         pass
 
     def gen_word_ngram(self):

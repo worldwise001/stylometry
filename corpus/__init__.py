@@ -3,7 +3,7 @@ __author__ = 'sharvey'
 import multiprocessing
 
 
-class Corpus:
+class Corpus(object):
     pool = None
 
     def __init__(self, cpu_count=None):

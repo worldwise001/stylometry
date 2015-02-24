@@ -60,7 +60,7 @@ class MySQLCorpus(Corpus):
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS `word` (
           `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-          `word` VARCHAR(190) NOT NULL UNIQUE,
+          `word` VARCHAR(190) NOT NULL UNIQUE
         );''')
         self.cnx.commit()
         cursor.execute('''CREATE TABLE IF NOT EXISTS `word_ngram` (
@@ -97,7 +97,7 @@ class MySQLCorpus(Corpus):
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS `word_clean` (
           `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-          `word` VARCHAR(190) NOT NULL UNIQUE,
+          `word` VARCHAR(190) NOT NULL UNIQUE
         );''')
         self.cnx.commit()
         cursor.execute('''CREATE TABLE IF NOT EXISTS `word_clean_ngram` (
@@ -168,6 +168,13 @@ class MySQLCorpus(Corpus):
         );''' % (table_name, table_name, table_name, table_name, table_name))
         self.cnx.commit()
 
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_pos` (
+          `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `pos` TEXT,
+          FOREIGN KEY (`id`) REFERENCES `%s` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+          );''' % (table_name, table_name))
+        self.cnx.commit()
+
     def run_sql(self, query, params):
         cursor = self.cnx.cursor(dictionary=True)
         while True:
@@ -190,7 +197,8 @@ class MySQLCorpus(Corpus):
         else:
             columns_txt = ', '.join(columns)
         query = query % (columns_txt, table)
-        query += ' ' + joins
+        if joins is not None:
+            query += ' ' + joins
 
         if condition is not None:
             query += ' WHERE ' + condition
