@@ -64,6 +64,28 @@ class RedditMySQLCorpus(MySQLCorpus):
           INDEX (`edited`)
           );''')
         self.cnx.commit()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `submission_counts` (
+          `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `reddit_id` BIGINT UNSIGNED,
+          `user_id` BIGINT UNSIGNED,
+          `count` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+          `char_count` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+          FOREIGN KEY (`reddit_id`) REFERENCES `reddit` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+          FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+          UNIQUE `pair` (`reddit_id`, `user_id`)
+          );''')
+        self.cnx.commit()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `comment_counts` (
+          `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `reddit_id` BIGINT UNSIGNED,
+          `user_id` BIGINT UNSIGNED,
+          `count` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+          `char_count` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+          FOREIGN KEY (`reddit_id`) REFERENCES `reddit` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+          FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+          UNIQUE `pair` (`reddit_id`, `user_id`)
+          );''')
+        self.cnx.commit()
         super(RedditMySQLCorpus, self).create_feature('comment')
         super(RedditMySQLCorpus, self).create_feature('submission')
 
@@ -71,7 +93,49 @@ class RedditMySQLCorpus(MySQLCorpus):
         pass
 
     def gen_counts(self):
-        pass
+        src_columns = ['`id`', '`name`']
+        src_table = '`user`'
+        authors = self.select_rows(src_columns, src_table)
+        src_columns = ['`id`', '`name`']
+        src_table = '`reddit`'
+        reddits = self.select_rows(src_columns, src_table)
+        cursor = self.cnx.cursor(dictionary=True, buffered=True)
+        i = 1
+        for author in authors:
+            if author['name'] is None or author['name'] == '':
+                continue
+            user_id = author['id']
+            for reddit in reddits:
+                if reddit['name'] is None or reddit['name'] == '':
+                    continue
+                reddit_id = reddit['id']
+                cursor.execute('''INSERT INTO `submission_counts`
+                                (`reddit_id`, `user_id`, `count`, `char_count`)
+                                SELECT
+                                %d AS `reddit_id`,
+                                %d AS `user_id`,
+                                COUNT(`submission`.`id`) AS `count`,
+                                SUM(LENGTH(`submission`.`selftext`)) AS `char_count`
+                                FROM `submission`
+                                LEFT JOIN `user` ON (`user`.`id`=`submission`.`user_id`)
+                                LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                                WHERE `submission`.`reddit_id` = %d AND `submission`.`user_id` = %d
+                                ''' % (reddit_id, user_id, reddit_id, user_id))
+                cursor.execute('''INSERT INTO `comment_counts`
+                                (`reddit_id`, `user_id`, `count`, `char_count`)
+                                SELECT
+                                %d AS `reddit_id`,
+                                %d AS `user_id`,
+                                COUNT(`comment`.`id`) AS `count`,
+                                SUM(LENGTH(`comment`.`body`)) AS `char_count`
+                                FROM `comment`
+                                LEFT JOIN `user` ON (`user`.`id`=`comment`.`user_id`)
+                                LEFT JOIN `submission` ON (`submission`.`id`=`comment`.`submission_id`)
+                                LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                                WHERE `submission`.`reddit_id` = %d AND `comment`.`user_id` = %d
+                                ''' % (reddit_id, user_id, reddit_id, user_id))
+                self.cnx.commit()
+                i += 1
 
     def gen_pos(self):
         # process submissions
