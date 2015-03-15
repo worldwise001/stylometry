@@ -93,49 +93,47 @@ class RedditMySQLCorpus(MySQLCorpus):
         pass
 
     def gen_counts(self):
-        src_columns = ['`id`', '`name`']
-        src_table = '`user`'
-        authors = self.select_rows(src_columns, src_table)
-        src_columns = ['`id`', '`name`']
-        src_table = '`reddit`'
-        reddits = self.select_rows(src_columns, src_table)
         cursor = self.cnx.cursor(dictionary=True, buffered=True)
-        i = 1
-        for author in authors:
-            if author['name'] is None or author['name'] == '':
-                continue
-            user_id = author['id']
-            for reddit in reddits:
-                if reddit['name'] is None or reddit['name'] == '':
-                    continue
-                reddit_id = reddit['id']
-                cursor.execute('''INSERT INTO `submission_counts`
-                                (`reddit_id`, `user_id`, `count`, `char_count`)
-                                SELECT
-                                %d AS `reddit_id`,
-                                %d AS `user_id`,
-                                COUNT(`submission`.`id`) AS `count`,
-                                SUM(LENGTH(`submission`.`selftext`)) AS `char_count`
-                                FROM `submission`
-                                LEFT JOIN `user` ON (`user`.`id`=`submission`.`user_id`)
-                                LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
-                                WHERE `submission`.`reddit_id` = %d AND `submission`.`user_id` = %d
-                                ''' % (reddit_id, user_id, reddit_id, user_id))
-                cursor.execute('''INSERT INTO `comment_counts`
-                                (`reddit_id`, `user_id`, `count`, `char_count`)
-                                SELECT
-                                %d AS `reddit_id`,
-                                %d AS `user_id`,
-                                COUNT(`comment`.`id`) AS `count`,
-                                SUM(LENGTH(`comment`.`body`)) AS `char_count`
-                                FROM `comment`
-                                LEFT JOIN `user` ON (`user`.`id`=`comment`.`user_id`)
-                                LEFT JOIN `submission` ON (`submission`.`id`=`comment`.`submission_id`)
-                                LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
-                                WHERE `submission`.`reddit_id` = %d AND `comment`.`user_id` = %d
-                                ''' % (reddit_id, user_id, reddit_id, user_id))
-                self.cnx.commit()
-                i += 1
+        cursor.execute('''SELECT DISTINCT submission.reddit_id AS rid, comment.user_id AS uid FROM comment
+                        LEFT JOIN submission ON (comment.submission_id=submission.id)
+                        WHERE comment.user_id IS NOT NULL AND submission.reddit_id IS NOT NULL;''')
+        results = cursor.fetchall()
+        for row in results:
+            rid = row['rid']
+            uid = row['uid']
+            cursor.execute('''INSERT IGNORE INTO `comment_counts`
+                            (`reddit_id`, `user_id`, `count`, `char_count`)
+                            SELECT
+                            %d AS `reddit_id`,
+                            %d AS `user_id`,
+                            COUNT(`comment`.`id`) AS `count`,
+                            SUM(LENGTH(`comment`.`body`)) AS `char_count`
+                            FROM `comment`
+                            LEFT JOIN `user` ON (`user`.`id`=`comment`.`user_id`)
+                            LEFT JOIN `submission` ON (`submission`.`id`=`comment`.`submission_id`)
+                            LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                            WHERE `submission`.`reddit_id` = %d AND `comment`.`user_id` = %d
+                            ''' % (int(rid), int(uid), int(rid), int(uid)))
+            self.cnx.commit()
+        cursor.execute('''SELECT DISTINCT submission.reddit_id AS rid, submission.user_id AS uid FROM submission
+                        WHERE submission.user_id IS NOT NULL AND submission.reddit_id IS NOT NULL;''')
+        results = cursor.fetchall()
+        for row in results:
+            rid = row['rid']
+            uid = row['uid']
+            cursor.execute('''INSERT IGNORE INTO `submission_counts`
+                            (`reddit_id`, `user_id`, `count`, `char_count`)
+                            SELECT
+                            %d AS `reddit_id`,
+                            %d AS `user_id`,
+                            COUNT(`submission`.`id`) AS `count`,
+                            SUM(LENGTH(`submission`.`selftext`)) AS `char_count`
+                            FROM `submission`
+                            LEFT JOIN `user` ON (`user`.`id`=`submission`.`user_id`)
+                            LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                            WHERE `submission`.`reddit_id` = %d AND `submission`.`user_id` = %d
+                            ''' % (int(rid), int(uid), int(rid), int(uid)))
+            self.cnx.commit()
 
     def gen_pos(self):
         # process submissions
