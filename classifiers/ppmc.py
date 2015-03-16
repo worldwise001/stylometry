@@ -37,11 +37,7 @@ class RedditPPM(Classifier):
                 test_bits += newtrie.bit_encoding
             del newtrie
             results.append({'id': row['id'],
+                            'username': row['username'],
                             'label': (self.user == row['username']),
                             'score': test_bits/(len(document)*8)})
         return results
-
-def run_reddit_experiment(corpus_type, char_count, reddits, mysql_opts):
-    corpus = RedditMySQLCorpus()
-    corpus.setup(**mysql_opts)
-
