@@ -94,9 +94,9 @@ class RedditMySQLCorpus(MySQLCorpus):
 
     def gen_counts(self):
         cursor = self.cnx.cursor(dictionary=True, buffered=True)
-        cursor.execute('''SELECT DISTINCT submission.reddit_id AS rid, comment.user_id AS uid FROM comment
-                        LEFT JOIN submission ON (comment.submission_id=submission.id)
-                        WHERE comment.user_id IS NOT NULL AND submission.reddit_id IS NOT NULL;''')
+        cursor.execute('''SELECT DISTINCT `submission`.`reddit_id` AS `rid`, `comment`.`user_id` AS `uid` FROM `comment`
+                        LEFT JOIN `submission` ON (`comment`.`submission_id`=`submission`.`id`)
+                        WHERE `comment`.`user_id` IS NOT NULL AND `submission`.`reddit_id` IS NOT NULL''')
         results = cursor.fetchall()
         for row in results:
             rid = row['rid']
@@ -115,8 +115,9 @@ class RedditMySQLCorpus(MySQLCorpus):
                             WHERE `submission`.`reddit_id` = %d AND `comment`.`user_id` = %d
                             ''' % (int(rid), int(uid), int(rid), int(uid)))
             self.cnx.commit()
-        cursor.execute('''SELECT DISTINCT submission.reddit_id AS rid, submission.user_id AS uid FROM submission
-                        WHERE submission.user_id IS NOT NULL AND submission.reddit_id IS NOT NULL;''')
+        cursor.execute('''SELECT DISTINCT `submission`.`reddit_id` AS `rid`, `submission`.`user_id` AS `uid`
+                        FROM `submission`
+                        WHERE `submission`.`user_id` IS NOT NULL AND `submission`.`reddit_id` IS NOT NULL''')
         results = cursor.fetchall()
         for row in results:
             rid = row['rid']
@@ -216,16 +217,16 @@ class RedditMySQLCorpus(MySQLCorpus):
         cursor = self.cnx.cursor(dictionary=True, buffered=True)
         reddit_ids = []
         for r in reddits:
-            cursor.execute('SELECT id FROM reddit WHERE name=%s', (r, ))
+            cursor.execute('SELECT `id` FROM `reddit` WHERE `name`=%s', (r, ))
             results = cursor.fetchall()
             for result in results:
                 reddit_ids.append(result['id'])
 
-        query = '''SELECT DISTINCT user.name AS username, user.id AS user_id FROM %s_counts AS a
-                        LEFT JOIN user ON (user.id=a.user_id)''' % corpus_type
+        query = '''SELECT DISTINCT `user`.`name` AS `username`, `user`.`id` AS `user_id` FROM `%s_counts` AS `a`
+                        LEFT JOIN `user` ON (`user`.`id`=`a`.`user_id`)''' % corpus_type
         i = 0
         for rid in reddit_ids:
-            subquery = ' LEFT JOIN %s_counts AS r%d ON (a.user_id=r%d.user_id AND r%d.reddit_id=%d)'\
+            subquery = ' LEFT JOIN `%s_counts` AS `r%d` ON (`a`.`user_id`=`r%d`.`user_id` AND `r%d`.`reddit_id`=%d)'\
                        % (corpus_type, i, i, i, rid)
             query += subquery
             i += 1
@@ -235,7 +236,7 @@ class RedditMySQLCorpus(MySQLCorpus):
                 query += ' WHERE'
             else:
                 query += ' AND'
-            query += ' r%d.char_count > %d' % (j, char_count)
+            query += ' `r%d`.`char_count` > %d' % (j, char_count)
 
         print(query)
         cursor.execute(query)
