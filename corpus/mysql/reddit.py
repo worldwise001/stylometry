@@ -244,4 +244,46 @@ class RedditMySQLCorpus(MySQLCorpus):
         return result
 
     def get_train_documents(self, corpus_type, user, reddit, char_count, min_char_count=0):
-        pass
+        cursor = self.cnx.cursor(dictionary=True, buffered=True)
+        if (corpus_type == 'submission'):
+            query = '''SELECT `submission`.`selftext` AS `text` FROM `submission`
+                        LEFT JOIN `user` ON (`user`.`id`=`submission`.`user_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND `user`.`name`=%s AND LENGTH(`submission`.`selftext`) > %s'''
+        elif (corpus_type == 'comment'):
+            query = '''SELECT `comment`.`body` AS `text` FROM `comment`
+                        LEFT JOIN `user` ON (`user`.`id`=`comment`.`user_id`)
+                        LEFT JOIN `submission` ON (`submission`.`id`=`comment`.`submission_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND `user`.`name`=%s AND LENGTH(`comment`.`body`) > %s'''
+        else:
+            return None
+        cursor.execute(query, (reddit, user, min_char_count))
+        result = cursor.fetchall()
+        text = ''
+        for row in result:
+            text += row['text'] + '\n'
+        return text[:char_count]
+
+    def get_test_documents(self, corpus_type, reddit, min_char_count=0):
+        cursor = self.cnx.cursor(dictionary=True, buffered=True)
+        if (corpus_type == 'submission'):
+            query = '''SELECT `submission`.`id` AS `id`,
+                            `user`.`name` AS `username`,
+                            `submission`.`selftext` AS `text` FROM `submission`
+                        LEFT JOIN `user` ON (`user`.`id`=`submission`.`user_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND LENGTH(`submission`.`selftext`) > %s'''
+        elif (corpus_type == 'comment'):
+            query = '''SELECT `comment`.`id` AS `id`,
+                            `user`.`name` AS `username`,
+                            `comment`.`body` AS `text` FROM `comment`
+                        LEFT JOIN `user` ON (`user`.`id`=`comment`.`user_id`)
+                        LEFT JOIN `submission` ON (`submission`.`id`=`comment`.`submission_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND LENGTH(`comment`.`body`) > %s'''
+        else:
+            return None
+        cursor.execute(query, (reddit, min_char_count))
+        result = cursor.fetchall()
+        return result
