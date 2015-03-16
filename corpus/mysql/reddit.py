@@ -211,3 +211,36 @@ class RedditMySQLCorpus(MySQLCorpus):
 
     def gen_pos_ngram(self):
         pass
+
+    def get_user_list(self, corpus_type, char_count, reddits):
+        cursor = self.cnx.cursor(dictionary=True, buffered=True)
+        reddit_ids = []
+        for r in reddits:
+            cursor.execute('SELECT id FROM reddit WHERE name=%s', (r, ))
+            results = cursor.fetchall()
+            for result in results:
+                reddit_ids.append(result['id'])
+
+        query = '''SELECT DISTINCT user.name AS username, user.id AS user_id FROM %s_counts AS a
+                        LEFT JOIN user ON (user.id=a.user_id)''' % corpus_type
+        i = 0
+        for rid in reddit_ids:
+            subquery = ' LEFT JOIN %s_counts AS r%d ON (a.user_id=r%d.user_id AND r%d.reddit_id=%d)'\
+                       % (corpus_type, i, i, i, rid)
+            query += subquery
+            i += 1
+
+        for j in range(0, i):
+            if j == 0:
+                query += ' WHERE'
+            else:
+                query += ' AND'
+            query += ' r%d.char_count > %d' % (j, char_count)
+
+        print(query)
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+
+    def get_train_documents(self, corpus_type, user, reddit, char_count, min_char_count=0):
+        pass
