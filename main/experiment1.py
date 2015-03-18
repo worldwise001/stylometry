@@ -52,7 +52,7 @@ def test_classifiers(atuple):
                 rank = i
                 break
         ranklist.append(rank)
-    print('tested %s %s %s', sr1, u['username'], sr2)
+    print('tested %s %s %s' % (sr1, u['username'], sr2))
     return ranklist
 
 if __name__ == '__main__':
@@ -88,6 +88,8 @@ if __name__ == '__main__':
     pairings = [ (args, u) for u in userlist ]
     result0 = pool.map(train_classifiers, pairings)
     print('Trained')
+    pool.close()
+    pool.join()
 
     for i in range(0, len(result0)):
         for sr in args.subreddits:
@@ -96,8 +98,11 @@ if __name__ == '__main__':
 
     pairings = [ (userlist, corpora[sr2], cls[sr1], sr1, u, sr2) for sr1 in args.subreddits for u in userlist for sr2 in args.subreddits ]
 
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
     print('Testing classifiers')
-    result1 = pool.map(test_classifiers, pairings, chunksize=2)
+    result1 = pool.map(test_classifiers, pairings)
+    pool.close()
+    pool.join()
 
     for i in range(0, len(pairings)):
         pairing = pairings[i]
