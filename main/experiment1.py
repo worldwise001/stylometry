@@ -24,7 +24,7 @@ def train_classifiers(atuple):
     corpus.setup(**(cred.kwargs))
     cls = {}
     for sr in args.subreddits:
-        document = corpus.get_train_documents('comment', user['username'], sr, args.c[0]).encode('utf-8')
+        document = corpus.get_train_documents(args.type, user['username'], sr, args.c[0]).encode('utf-8')
         cl = RedditPPM()
         cl.train(document)
         cls[sr] = cl
@@ -33,15 +33,13 @@ def train_classifiers(atuple):
 
 
 def test_classifiers(atuple):
+    global corpora
     userlist, cls, sr1, u, sr2 = atuple
 
     result = []
     ranklist = []
-    corpus = RedditMySQLCorpus()
-    corpus.setup(**(cred.kwargs))
-    D = corpus.get_test_subset_documents('comment', sr2, u['username'])
-    del corpus
     print('testing %s %s %s' % (sr1, u['username'], sr2))
+    D = corpora[sr2][u['username']]
     for d in D:
         for user in userlist:
             username = user['username']
@@ -70,10 +68,14 @@ if __name__ == '__main__':
     corpus.setup(**(cred.kwargs))
     corpus.create()
     print(args.n, args.c, args.subreddits)
-    userlist = corpus.get_user_list('comment', args.c[0], args.subreddits)
+    userlist = corpus.get_user_list(args.type, args.c[0], args.subreddits)
     userlist = userlist[:args.n[0]]
     print('Got users')
     pprint.pprint(userlist)
+    print('Downloading document list')
+    corpora = {}
+    for sr in args.subreddits:
+        corpora[sr] = corpus.get_test_grouped_documents(args.type, sr)
     del corpus
 
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
