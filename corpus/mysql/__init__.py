@@ -12,8 +12,8 @@ from corpus import Corpus
 class MySQLCorpus(Corpus):
     cnx = None
 
-    def __init__(self, **kwargs):
-        super(MySQLCorpus, self).__init__(**kwargs)
+    def __init__(self, cpu_count=None):
+        super(MySQLCorpus, self).__init__(cpu_count)
 
     def __del__(self):
         if self.cnx is not None:

@@ -1,13 +1,15 @@
 __author__ = 'sharvey'
 
+import random
+
 from corpus.mysql import MySQLCorpus
 from corpus.mysql import util
 
 
 class RedditMySQLCorpus(MySQLCorpus):
 
-    def __init__(self, **kwargs):
-        super(RedditMySQLCorpus, self).__init__(**kwargs)
+    def __init__(self, cpu_count=None):
+        super(RedditMySQLCorpus, self).__init__(cpu_count)
 
     def __del__(self):
         super(RedditMySQLCorpus, self).__del__()
@@ -261,6 +263,7 @@ class RedditMySQLCorpus(MySQLCorpus):
         cursor.execute(query, (reddit, user, min_char_count))
         result = cursor.fetchall()
         text = ''
+        random.shuffle(result)
         for row in result:
             text += row['text'] + '\n'
         return text[:char_count]
@@ -286,4 +289,5 @@ class RedditMySQLCorpus(MySQLCorpus):
             return None
         cursor.execute(query, (reddit, min_char_count))
         result = cursor.fetchall()
+        random.shuffle(result)
         return result

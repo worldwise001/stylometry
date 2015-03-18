@@ -7,14 +7,14 @@ class Corpus(object):
     pool = None
 
     def __init__(self, cpu_count=None):
-        if cpu_count is None:
-            cpu_count = multiprocessing.cpu_count()
-        self.pool = multiprocessing.Pool(cpu_count)
-        print('Using %d cpus for processing' % cpu_count)
+        if cpu_count is not None:
+            self.pool = multiprocessing.Pool(cpu_count)
+            print('Using %d cpus for processing' % cpu_count)
 
     def __del__(self):
-        self.pool.close()
-        self.pool.join()
+        if (self.pool is not None):
+            self.pool.close()
+            self.pool.join()
 
     def create(self):
         pass
