@@ -15,6 +15,7 @@ import sys
 
 from corpus.mysql.reddit import RedditMySQLCorpus
 from classifiers.ppmc import RedditPPM
+import graph
 
 import cred
 
@@ -40,7 +41,6 @@ def test_classifiers(atuple):
 
     result = []
     ranklist = []
-    print('testing %s %s %s' % (sr1, u['username'], sr2))
     D = corpora[sr2][u['username']]
     for d in D:
         for user in userlist:
@@ -55,7 +55,6 @@ def test_classifiers(atuple):
                 rank = i
                 break
         ranklist.append(rank)
-    print('tested %s %s %s' % (sr1, u['username'], sr2))
     return ranklist
 
 if __name__ == '__main__':
@@ -107,9 +106,21 @@ if __name__ == '__main__':
     pool.close()
     pool.join()
 
+    boxplot_data = {}
     for i in range(0, len(pairings)):
         pairing = pairings[i]
         res = result1[i]
         sr1, u, sr2 = pairing
-        median = numpy.median(res)
-        print('%s-%s on %s avg rank: %f' % (sr1, u['username'], sr2, median))
+        username = u['username']
+        if username not in boxplot_data:
+            boxplot_data[username] = {}
+        rr = '%s %s' % (sr1, sr2)
+        boxplot_data[username][rr] = res
+
+    for u in boxplot_data:
+        boxplot = boxplot_data[u]
+        graph.boxplot_single('data/boxplot_%s' % u,
+                             boxplot,
+                             'trained reddit-tested reddit',
+                             'mean rank'
+                             'Box plot for mean rank for %s' % u)
