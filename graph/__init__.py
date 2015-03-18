@@ -90,7 +90,7 @@ def boxplot_single(filename, data, x_title='', y_title='', title=None):
     if title is None:
         title = filename
 
-    plt.figure(figsize=(0.8*len(data),12), dpi=600)
+    fig = plt.figure(figsize=(len(data)+3,12), dpi=600)
     ax = plt.axes()
 
     author_labels = []
@@ -107,6 +107,7 @@ def boxplot_single(filename, data, x_title='', y_title='', title=None):
     plt.xlabel(x_title)
     plt.ylabel(y_title)
     plt.title(title)
+    plt.tight_layout()
 
     plt.savefig('%s.png' % filename, format='png')
     plt.savefig('%s.eps' % filename, format='eps')
@@ -116,7 +117,7 @@ def boxplot(filename, data, groups, x_title='', y_title='', title=None):
     if title is None:
         title = filename
 
-    plt.figure(figsize=(1.5*len(data),12), dpi=600)
+    plt.figure(figsize=(1.5*len(data)+3,12), dpi=600)
     ax = plt.axes()
 
     colors=['blue', 'red', 'green']*10
@@ -152,6 +153,7 @@ def boxplot(filename, data, groups, x_title='', y_title='', title=None):
     plt.xlabel(x_title)
     plt.ylabel(y_title)
     plt.title(title)
+    plt.tight_layout()
 
     hB, = plt.plot([1,1],'b-')
     hR, = plt.plot([1,1],'r-')
