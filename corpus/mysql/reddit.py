@@ -263,7 +263,6 @@ class RedditMySQLCorpus(MySQLCorpus):
         cursor.execute(query, (reddit, user, min_char_count))
         result = cursor.fetchall()
         text = ''
-        random.shuffle(result)
         for row in result:
             text += row['text'] + '\n'
         return text[:char_count]
@@ -289,5 +288,34 @@ class RedditMySQLCorpus(MySQLCorpus):
             return None
         cursor.execute(query, (reddit, min_char_count))
         result = cursor.fetchall()
-        random.shuffle(result)
         return result
+
+    def get_test_grouped_documents(self, corpus_type, reddit, min_char_count=0):
+        cursor = self.cnx.cursor(dictionary=True, buffered=True)
+        if (corpus_type == 'submission'):
+            query = '''SELECT `submission`.`id` AS `id`,
+                            `user`.`name` AS `username`,
+                            `submission`.`selftext` AS `text` FROM `submission`
+                        LEFT JOIN `user` ON (`user`.`id`=`submission`.`user_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND LENGTH(`submission`.`selftext`) > %s'''
+        elif (corpus_type == 'comment'):
+            query = '''SELECT `comment`.`id` AS `id`,
+                            `user`.`name` AS `username`,
+                            `comment`.`body` AS `text` FROM `comment`
+                        LEFT JOIN `user` ON (`user`.`id`=`comment`.`user_id`)
+                        LEFT JOIN `submission` ON (`submission`.`id`=`comment`.`submission_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND LENGTH(`comment`.`body`) > %s'''
+        else:
+            return None
+        cursor.execute(query, (reddit, min_char_count))
+        result = cursor.fetchall()
+        result0 = {}
+        for r in result:
+            if r['username'] is None:
+                continue
+            if r['username'] not in result0:
+                result0[r['username']] = []
+            result0[r['username']].append(r)
+        return result0

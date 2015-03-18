@@ -38,8 +38,6 @@ def test_classifiers(atuple):
     ranklist = []
     print('testing %s %s %s' % (sr1, u['username'], sr2))
     for d in D:
-        if d['username'] is None or d['username'] != u['username']:
-            continue
         for user in userlist:
             username = user['username']
             cl = cls[username]
@@ -78,7 +76,7 @@ if __name__ == '__main__':
     print('Downloading test documents')
     for sr in args.subreddits:
         cls[sr] = {}
-        corpora[sr] = corpus.get_test_documents('comment', sr)
+        corpora[sr] = corpus.get_test_grouped_documents('comment', sr)
         print('Downloaded %s' % sr)
 
     del corpus
@@ -96,7 +94,10 @@ if __name__ == '__main__':
             cl = result0[i][sr]
             cls[sr][userlist[i]['username']] = cl
 
-    pairings = [ (userlist, corpora[sr2], cls[sr1], sr1, u, sr2) for sr1 in args.subreddits for u in userlist for sr2 in args.subreddits ]
+    pairings = [ (userlist, corpora[sr2][u['username']], cls[sr1], sr1, u, sr2)
+                 for sr1 in args.subreddits
+                 for u in userlist
+                 for sr2 in args.subreddits ]
 
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     print('Testing classifiers')
