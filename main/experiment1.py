@@ -39,10 +39,10 @@ def test_classifiers(atuple):
     global cls
     sr1, u, sr2 = atuple
 
-    result = []
     ranklist = []
     D = corpora[sr2][u['username']]
     for d in D:
+        result = []
         for user in userlist:
             username = user['username']
             cl = cls[sr1][username]
