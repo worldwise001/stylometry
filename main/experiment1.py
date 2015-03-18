@@ -18,8 +18,8 @@ from classifiers.ppmc import RedditPPM
 
 import cred
 
-def train_classifiers(atuple):
-    args, user = atuple
+def train_classifiers(user):
+    global args
     corpus = RedditMySQLCorpus()
     corpus.setup(**(cred.kwargs))
     cls = {}
@@ -34,7 +34,9 @@ def train_classifiers(atuple):
 
 def test_classifiers(atuple):
     global corpora
-    userlist, cls, sr1, u, sr2 = atuple
+    global userlist
+    global cls
+    sr1, u, sr2 = atuple
 
     result = []
     ranklist = []
@@ -43,7 +45,7 @@ def test_classifiers(atuple):
     for d in D:
         for user in userlist:
             username = user['username']
-            cl = cls[username]
+            cl = cls[sr1][username]
             score = cl.score(d['text'])
             result.append({'username': username, 'score': score})
         result = sorted(result, key=(itemgetter('score')))
@@ -76,18 +78,17 @@ if __name__ == '__main__':
     corpora = {}
     for sr in args.subreddits:
         corpora[sr] = corpus.get_test_grouped_documents(args.type, sr)
+        print('Downloaded %s' % sr)
     del corpus
 
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     print('Training classifiers')
-    pairings = [ (args, u) for u in userlist ]
-    result0 = pool.map(train_classifiers, pairings)
+    result0 = pool.map(train_classifiers, userlist)
     print('Trained')
     pool.close()
     pool.join()
 
     cls = {}
-
     for i in range(0, len(result0)):
         for sr in args.subreddits:
             if sr not in cls:
@@ -95,7 +96,7 @@ if __name__ == '__main__':
             cl = result0[i][sr]
             cls[sr][userlist[i]['username']] = cl
 
-    pairings = [ (userlist, cls[sr1], sr1, u, sr2)
+    pairings = [ (sr1, u, sr2)
                  for sr1 in args.subreddits
                  for u in userlist
                  for sr2 in args.subreddits ]
@@ -109,6 +110,6 @@ if __name__ == '__main__':
     for i in range(0, len(pairings)):
         pairing = pairings[i]
         res = result1[i]
-        ul, cl, sr1, u, sr2 = pairing
+        sr1, u, sr2 = pairing
         median = numpy.median(res)
         print('%s-%s on %s avg rank: %f' % (sr1, u['username'], sr2, median))
