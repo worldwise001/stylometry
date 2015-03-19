@@ -86,7 +86,7 @@ def setboxcol(bp, i, col):
     plt.setp(bp['fliers'][i*2+1], color=col)
     plt.setp(bp['medians'][i], color=col)
 
-def boxplot_single(filename, data, x_title='', y_title='', title=None):
+def boxplot_single(filename, data, xr=None, yr=None, x_title='', y_title='', title=None):
     if title is None:
         title = filename
 
@@ -104,6 +104,10 @@ def boxplot_single(filename, data, x_title='', y_title='', title=None):
     plt.xlim(0, len(data)+1)
     ax.set_xticklabels(author_labels, rotation=70)
     ax.set_xticks(range(1, len(data)+1))
+    if xr is not None:
+        plt.xlim(xr)
+    if yr is not None:
+        plt.ylim(yr)
     plt.xlabel(x_title)
     plt.ylabel(y_title)
     plt.title(title)

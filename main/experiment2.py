@@ -2,7 +2,7 @@
 This experiment is set up in the following way:
 1) We choose n users (set U) from k subreddits (set R) listed who have written at least c characters in each r
 2) We train n*k models for authorship; i.e. for each user u in U, we gather a sample of text of size c for u from R
-3) We test each document d from D_r with all n*k models
+3) We test each document d from D_r with all n*k models (in this case documents from D_r are concatenated and divided into normalized chunks)
 4) We rank each model trained a reddit r' for that document d, and record the position of the correct model
 """
 __author__ = 'sharvey'
@@ -46,7 +46,7 @@ def test_classifiers(atuple):
         for user in userlist:
             username = user['username']
             cl = cls[sr1][username]
-            score = cl.score(d['text'])
+            score = cl.score(d)
             result.append({'username': username, 'score': score})
         result = sorted(result, key=(itemgetter('score')))
         rank = 0
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     print('Downloading document list')
     corpora = {}
     for sr in args.subreddits:
-        corpora[sr] = corpus.get_test_grouped_documents(args.type, sr)
+        corpora[sr] = corpus.get_test_normalized_documents(args.type, sr, args.c[0])
         print('Downloaded %s' % sr)
     del corpus
 

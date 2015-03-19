@@ -320,6 +320,43 @@ class RedditMySQLCorpus(MySQLCorpus):
             result0[r['username']].append(r)
         return result0
 
+    def get_test_normalized_documents(self, corpus_type, reddit, chunksize, min_char_count=0):
+        cursor = self.cnx.cursor(dictionary=True, buffered=True)
+        if (corpus_type == 'submission'):
+            query = '''SELECT `submission`.`id` AS `id`,
+                            `user`.`name` AS `username`,
+                            `submission`.`selftext` AS `text` FROM `submission`
+                        LEFT JOIN `user` ON (`user`.`id`=`submission`.`user_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND LENGTH(`submission`.`selftext`) > %s'''
+        elif (corpus_type == 'comment'):
+            query = '''SELECT `comment`.`id` AS `id`,
+                            `user`.`name` AS `username`,
+                            `comment`.`body` AS `text` FROM `comment`
+                        LEFT JOIN `user` ON (`user`.`id`=`comment`.`user_id`)
+                        LEFT JOIN `submission` ON (`submission`.`id`=`comment`.`submission_id`)
+                        LEFT JOIN `reddit` ON (`reddit`.`id`=`submission`.`reddit_id`)
+                        WHERE `reddit`.`name`=%s AND LENGTH(`comment`.`body`) > %s'''
+        else:
+            return None
+        cursor.execute(query, (reddit, min_char_count))
+        result = cursor.fetchall()
+        result0 = {}
+        for r in result:
+            if r['username'] is None:
+                continue
+            if r['username'] not in result0:
+                result0[r['username']] = []
+            result0[r['username']].append(r['text'])
+        result1 = {}
+        for username in result0:
+            D = '\n'.join(result0[username])
+            Dn = []
+            for i in range(0, len(D)/chunksize):
+                Dn.append(D[i*chunksize:(i+1)*chunksize])
+            result1[username] = Dn
+        return result1
+
     def get_test_subset_documents(self, corpus_type, reddit, user, min_char_count=0):
         cursor = self.cnx.cursor(dictionary=True, buffered=True)
         if (corpus_type == 'submission'):
