@@ -90,32 +90,36 @@ def boxplot_single(filename, data, xr=None, yr=None, x_title='', y_title='', tit
     if title is None:
         title = filename
 
-    fig = plt.figure(figsize=(len(data)+3,12), dpi=600)
-    ax = plt.axes()
-
     author_labels = []
     author_data = []
-
     for author in data:
         author_labels.append(author)
         author_data.append(data[author])
 
-    bp = plt.boxplot(author_data, positions=range(1, len(data)+1), widths = 0.8)
-    plt.xlim(0, len(data)+1)
-    ax.set_xticklabels(author_labels, rotation=70)
-    ax.set_xticks(range(1, len(data)+1))
-    if xr is not None:
-        plt.xlim(xr)
-    if yr is not None:
-        plt.ylim(yr)
-    plt.xlabel(x_title)
-    plt.ylabel(y_title)
-    plt.title(title)
-    plt.tight_layout()
+    for start in range(0, len(data), 50):
+        end = start+50
+        if end > len(data):
+            end = len(data)
+        width = end-start
+        fig = plt.figure(figsize=(width,12), dpi=600)
+        ax = plt.axes()
 
-    plt.savefig('%s.png' % filename, format='png')
-    plt.savefig('%s.eps' % filename, format='eps')
-    plt.close()
+        bp = plt.boxplot(author_data[start:end], positions=range(1, width+1), widths = 0.8)
+        plt.xlim(0, width+1)
+        ax.set_xticklabels(author_labels[start:end], rotation=70)
+        ax.set_xticks(range(1, width+1))
+        if xr is not None:
+            plt.xlim(xr)
+        if yr is not None:
+            plt.ylim(yr)
+        plt.xlabel(x_title)
+        plt.ylabel(y_title)
+        plt.title(title)
+        plt.tight_layout()
+
+        plt.savefig('%s_%d.png' % (filename,start), format='png')
+        plt.savefig('%s_%d.eps' % (filename,start), format='eps')
+        plt.close()
 
 def boxplot(filename, data, groups, x_title='', y_title='', title=None):
     if title is None:
