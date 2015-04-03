@@ -7,7 +7,7 @@ if __name__ == '__main__':
     corpus = RedditMySQLCorpus()
     corpus.setup(**(cred.kwargs))
 
-    result = corpus.run_sql('SELECT * FROM comment_feature_read LIMIT 100', None)
+    result = corpus.run_sql('SELECT * FROM comment_feature_read', None)
     print('Got results')
 
     values = [ float(v['ari']) for v in result ]
