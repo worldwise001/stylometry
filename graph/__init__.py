@@ -4,6 +4,19 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 
 
+def hist(filename, values, x_title='', y_title='', title=None):
+    if title is None:
+        title = filename
+
+    plt.figure(figsize=(24,18), dpi=600)
+    plt.hist(values, bins=20)
+    plt.xlabel(x_title)
+    plt.ylabel(y_title)
+    plt.title(title)
+    plt.savefig('%s.png' % filename, format='png')
+    plt.savefig('%s.eps' % filename, format='eps')
+
+
 def generate(filename, rows, columns, x_title='', y_title='', title=None):
     rows_num = range(1, len(rows)+1)
     if title is None:
