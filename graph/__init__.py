@@ -4,6 +4,22 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 
 
+def hist_prebin(filename, values, x_title='', y_title='', title=None):
+    if title is None:
+        title = filename
+
+    left = [ v[0] for v in values ]
+    height = [ v[1] for v in values ]
+
+    plt.figure(figsize=(24,18), dpi=600)
+    plt.bar(left=left, height=height, width=1)
+    plt.xlabel(x_title)
+    plt.ylabel(y_title)
+    plt.title(title)
+    plt.savefig('%s.png' % filename, format='png')
+    plt.savefig('%s.eps' % filename, format='eps')
+
+
 def hist(filename, values, x_title='', y_title='', title=None):
     if title is None:
         title = filename
@@ -34,7 +50,7 @@ def generate(filename, rows, columns, x_title='', y_title='', title=None):
     plt.savefig('%s.eps' % filename, format='eps')
 
 
-def scatter(filename, x, y, x_title='', y_title='', title=None):
+def scatter(filename, x, y, xr=None, yr=None, x_title='', y_title='', title=None):
     if title is None:
         title = filename
 
@@ -42,6 +58,10 @@ def scatter(filename, x, y, x_title='', y_title='', title=None):
     plt.scatter(x, y)
     plt.xlabel(x_title)
     plt.ylabel(y_title)
+    if xr is not None:
+        plt.xlim(xr)
+    if yr is not None:
+        plt.ylim(yr)
     plt.title(title)
     plt.savefig('%s.png' % filename, format='png')
     plt.savefig('%s.eps' % filename, format='eps')
