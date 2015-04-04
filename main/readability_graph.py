@@ -7,37 +7,39 @@ if __name__ == '__main__':
     corpus = RedditMySQLCorpus()
     corpus.setup(**(cred.kwargs))
 
+    indices = ['ari', 'flesch_reading_ease', 'flesch_kincaid_grade_level', 'gunning_fog_index', 'smog_index',
+               'coleman_liau_index', 'lix', 'rix']
+
+    for i in indices:
+        result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/10.0)*10 AS bin '
+                                     'FROM comment_feature_read '
+                                     'GROUP BY bin ORDER BY bin' % i, None)
+
+        values = [ (r[i], r['count']) for r in result ]
+        graph.hist_prebin('data/%s_hist' % i, values, i, 'Frequency',
+                          'Frequency of %s values' % i)
+
     result = corpus.run_sql('SELECT * FROM comment_feature_read', None)
-    print('Got results')
 
-    values = [ float(v['ari']) for v in result ]
-    graph.hist('data/ari_hist', values, 'ARI', 'Frequency',
-               'Frequency of ARI values')
-
-    values = [ float(v['flesch_reading_ease']) for v in result ]
-    graph.hist('data/flesch_reading_ease_hist', values, 'Flesch Reading Ease', 'Frequency',
-               'Frequency of Flesch Reading Ease values')
-
-    values = [ float(v['flesch_kincaid_grade_level']) for v in result ]
-    graph.hist('data/flesch_kincaid_grade_level_hist', values, 'Flesch Kincaid Grade Level', 'Frequency',
-               'Frequency of Flesch Kincaid Grade Level values')
-
-    values = [ float(v['gunning_fog_index']) for v in result ]
-    graph.hist('data/gunning_fog_index_hist', values, 'Gunning Fog Index', 'Frequency',
-               'Frequency of Gunning Fog Index values')
-
-    values = [ float(v['smog_index']) for v in result ]
-    graph.hist('data/smog_index_hist', values, 'Smog Index', 'Frequency',
-               'Frequency of Smog Index values')
-
-    values = [ float(v['coleman_liau_index']) for v in result ]
-    graph.hist('data/coleman_liau_index_hist', values, 'Coleman Liau Index', 'Frequency',
-               'Frequency of Coleman Liau Index values')
-
-    values = [ float(v['lix']) for v in result ]
-    graph.hist('data/lix_hist', values, 'LIX', 'Frequency',
-               'Frequency of LIX values')
-
-    values = [ float(v['rix']) for v in result ]
-    graph.hist('data/rix_hist', values, 'RIX', 'Frequency',
-               'Frequency of RIX values')
+    seen = []
+    limits = {
+        'ari': (-20, 100),
+        'flesch_reading_ease': (-150, 200),
+        'flesch_kincaid_grade_level': (-20, 50),
+        'gunning_fog_index': (0, 40),
+        'smog_index': (0, 20),
+        'coleman_liau_index': (-30, 30),
+        'lix': (0, 100),
+        'rix': (0, 10)
+    }
+    for i in indices:
+        for j in indices:
+            if i == j:
+                continue
+            key = tuple(sorted([i, j]))
+            if key in seen:
+                continue
+            seen.append(key)
+            x = [ float(v[i]) for v in result ]
+            y = [ float(v[j]) for v in result ]
+            graph.scatter('data/%s-%s' % (i, j), x, y, limits[i], limits[j], i, j)
