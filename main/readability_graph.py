@@ -7,21 +7,6 @@ if __name__ == '__main__':
     corpus = RedditMySQLCorpus()
     corpus.setup(**(cred.kwargs))
 
-    indices = ['ari', 'flesch_reading_ease', 'flesch_kincaid_grade_level', 'gunning_fog_index', 'smog_index',
-               'coleman_liau_index', 'lix', 'rix']
-
-    for i in indices:
-        result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/10.0)*10 AS bin '
-                                     'FROM comment_feature_read '
-                                     'GROUP BY bin ORDER BY bin' % i, None)
-
-        values = [ (r[i], r['count']) for r in result ]
-        graph.hist_prebin('data/%s_hist' % i, values, i, 'Frequency',
-                          'Frequency of %s values' % i)
-
-    result = corpus.run_sql('SELECT * FROM comment_feature_read', None)
-
-    seen = []
     limits = {
         'ari': (-20, 100),
         'flesch_reading_ease': (-150, 200),
@@ -32,6 +17,26 @@ if __name__ == '__main__':
         'lix': (0, 100),
         'rix': (0, 10)
     }
+
+    indices = ['ari', 'flesch_reading_ease', 'flesch_kincaid_grade_level', 'gunning_fog_index', 'smog_index',
+               'coleman_liau_index', 'lix', 'rix']
+
+    for i in indices:
+        result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/10.0)*10 AS bin '
+                                     'FROM comment_feature_read '
+                                     'GROUP BY bin ORDER BY bin' % i, None)
+
+        old_values = [ (r[i], r['count']) for r in result ]
+        values = []
+        for a, b in old_values:
+            if a >= limits[i][0] and a <= limits[i][1]:
+                values.append((a, b))
+        graph.hist_prebin('data/%s_hist' % i, values, i, 'Frequency',
+                          'Frequency of %s values' % i)
+
+    result = corpus.run_sql('SELECT * FROM comment_feature_read ORDER BY RAND() LIMIT 2000', None)
+
+    seen = []
     for i in indices:
         for j in indices:
             if i == j:
