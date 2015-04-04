@@ -14,8 +14,9 @@ if __name__ == '__main__':
         result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/10.0)*10 AS bin '
                                      'FROM comment_feature_read '
                                      'GROUP BY bin ORDER BY bin' % i, None)
+        print(i)
 
-        values = [ (r[i], r['count']) for r in result ]
+        values = [ (r['bin'], r['count']) for r in result ]
         graph.hist_prebin('data/%s_hist' % i, values, i, 'Frequency',
                           'Frequency of %s values' % i)
 
@@ -39,6 +40,7 @@ if __name__ == '__main__':
             key = tuple(sorted([i, j]))
             if key in seen:
                 continue
+            print(key)
             seen.append(key)
             x = [ float(v[i]) for v in result ]
             y = [ float(v[j]) for v in result ]
