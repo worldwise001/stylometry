@@ -69,7 +69,9 @@ def scatter(filename, x, y, line=True, xr=None, yr=None, x_title='', y_title='',
         results = sm.OLS(y, sm.add_constant(x)).fit()
         x_sorted = sorted(x)
         x_plot = np.linspace(x_sorted[0], 1, x_sorted[-1])
-        plt.plot(x_plot, x_plot*results.params[0] + results.params[1])
+        line_plot = plt.plot(x_plot, x_plot*results.params[0] + results.params[1],
+                             label=('r^2 = %s' % results.rsquared))
+        plt.legend(handles=[line_plot])
 
     plt.xlabel(x_title)
     plt.ylabel(y_title)
