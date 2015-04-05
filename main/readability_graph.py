@@ -22,9 +22,10 @@ if __name__ == '__main__':
                'coleman_liau_index', 'lix', 'rix']
 
     for i in indices:
-        result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/2.0)*2 AS bin '
+        bin_width = (limits[i][1] - limits[i][0])/20
+        result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/%s)*%s AS bin '
                                      'FROM comment_feature_read '
-                                     'GROUP BY bin ORDER BY bin' % i, None)
+                                     'GROUP BY bin ORDER BY bin' % (i, bin_width, bin_width), None)
         print(i)
 
         old_values = [ (r['bin'], r['count']) for r in result ]
@@ -32,7 +33,7 @@ if __name__ == '__main__':
         for a, b in old_values:
             if a >= limits[i][0] and a <= limits[i][1]:
                 values.append((a, b))
-        graph.hist_prebin('data/%s_hist' % i, values, 2, i, 'Frequency',
+        graph.hist_prebin('data/%s_hist' % i, values, bin_width, i, 'Frequency',
                           'Frequency of %s values' % i)
 
     result = corpus.run_sql('SELECT * FROM comment_feature_read ORDER BY RAND() LIMIT 2000', None)

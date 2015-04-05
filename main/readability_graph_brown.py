@@ -63,4 +63,4 @@ if __name__ == '__main__':
             seen.append(key)
             x = [ float(v[i]) for v in result ]
             y = [ float(v[j]) for v in result ]
-            graph.scatter('data/%s-%s' % (i, j), x, y, i, j)
+            graph.scatter('data/%s-%s' % (i, j), x, y, True, x_title=i, y_title=j)

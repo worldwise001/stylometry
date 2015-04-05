@@ -66,12 +66,12 @@ def scatter(filename, x, y, line=True, xr=None, yr=None, x_title='', y_title='',
         plt.ylim(yr)
 
     if line:
-        results = sm.OLS(y, sm.add_constant(x)).fit()
-        x_sorted = sorted(x)
-        x_plot = np.linspace(x_sorted[0], 1, x_sorted[-1])
-        line_plot = plt.plot(x_plot, x_plot*results.params[0] + results.params[1],
-                             label=('r^2 = %s' % results.rsquared))
-        plt.legend(handles=[line_plot])
+        est = sm.OLS(y, sm.add_constant(x)).fit()
+        x_prime = np.linspace(min(x), max(x), 100)[:, np.newaxis]
+        x_prime = sm.add_constant(x_prime)
+        y_hat = est.predict(x_prime)
+        line_plot = plt.plot(x_prime[:, 1], y_hat, 'r', alpha=0.9, label='r^2 = %s' % est.rsquared)
+        plt.legend(handles=[line_plot], labels=['r^2 = %s' % est.rsquared])
 
     plt.xlabel(x_title)
     plt.ylabel(y_title)
