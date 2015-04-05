@@ -22,7 +22,7 @@ if __name__ == '__main__':
                'coleman_liau_index', 'lix', 'rix']
 
     for i in indices:
-        result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/10.0)*10 AS bin '
+        result = corpus.run_sql('SELECT COUNT(*) AS count, FLOOR(FLOOR(%s)/2.0)*2 AS bin '
                                      'FROM comment_feature_read '
                                      'GROUP BY bin ORDER BY bin' % i, None)
         print(i)
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         for a, b in old_values:
             if a >= limits[i][0] and a <= limits[i][1]:
                 values.append((a, b))
-        graph.hist_prebin('data/%s_hist' % i, values, i, 'Frequency',
+        graph.hist_prebin('data/%s_hist' % i, values, 2, i, 'Frequency',
                           'Frequency of %s values' % i)
 
     result = corpus.run_sql('SELECT * FROM comment_feature_read ORDER BY RAND() LIMIT 2000', None)
@@ -49,4 +49,4 @@ if __name__ == '__main__':
             seen.append(key)
             x = [ float(v[i]) for v in result ]
             y = [ float(v[j]) for v in result ]
-            graph.scatter('data/%s-%s' % (i, j), x, y, limits[i], limits[j], i, j)
+            graph.scatter('data/%s-%s' % (i, j), x, y, True, limits[i], limits[j], i, j)
