@@ -181,10 +181,10 @@ class MySQLCorpus(Corpus):
         cursor = self.cnx.cursor(dictionary=True)
         while True:
             try:
-                print(query)
+                #print(query, params)
                 cursor.execute(query, params)
                 if cursor.with_rows:
-                    print('Getting rows')
+                    #print('Getting rows')
                     return cursor.fetchall()
                 return None
             except (KeyboardInterrupt, SystemExit):

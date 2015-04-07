@@ -20,7 +20,10 @@ class Readability:
         sentence_count = len(get_sentences(text))
         syllable_count = count_syllables(words)
         complexwords_count = count_complex_words(text)
-        avg_words_p_sentence = word_count/sentence_count
+        if sentence_count > 0:
+            avg_words_p_sentence = word_count/sentence_count
+        else:
+            avg_words_p_sentence = 0
         
         self.analyzedVars = {
             'words': words,

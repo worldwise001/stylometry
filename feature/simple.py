@@ -23,20 +23,22 @@ def clean_words(words):
         new_words.append(word.lstrip(string.punctuation).rstrip(string.punctuation).lower())
     return new_words
 
-
-def get_text_stats(text):
-    stats = { 'read': {}, 'stat': {}}
-
+def get_read_stats(text):
+    read = {}
     # readability stats
     rd = Readability(text)
-    stats['read']['ari'] = rd.ARI()
-    stats['read']['flesch_reading_ease'] = rd.FleschReadingEase()
-    stats['read']['flesch_kincaid_grade_level'] = rd.FleschKincaidGradeLevel()
-    stats['read']['gunning_fog_index'] = rd.GunningFogIndex()
-    stats['read']['smog_index'] = rd.SMOGIndex()
-    stats['read']['coleman_liau_index'] = rd.ColemanLiauIndex()
-    stats['read']['lix'] = rd.LIX()
-    stats['read']['rix'] = rd.RIX()
+    read['ari'] = rd.ARI()
+    read['flesch_reading_ease'] = rd.FleschReadingEase()
+    read['flesch_kincaid_grade_level'] = rd.FleschKincaidGradeLevel()
+    read['gunning_fog_index'] = rd.GunningFogIndex()
+    read['smog_index'] = rd.SMOGIndex()
+    read['coleman_liau_index'] = rd.ColemanLiauIndex()
+    read['lix'] = rd.LIX()
+    read['rix'] = rd.RIX()
+    return read
+
+def get_text_stats(text):
+    stats = { 'read': get_read_stats(text), 'stat': {}}
 
     # perform some statistics on words
     words = word_tokenize(text)
