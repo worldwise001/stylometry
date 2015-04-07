@@ -292,7 +292,7 @@ class MySQLCorpus(Corpus):
         fp = open('data/oldresults.csv', 'w')
         st = time.clock()
         while True:
-            rows = self.select_rows(src_columns, src_table, limit=(j, chunk*cpus))
+            rows = self.select_rows(src_columns, src_table, limit=(j, chunk))
             if len(rows) == 0:
                 break
             for ttuple in transform_tuple_list:
@@ -306,7 +306,7 @@ class MySQLCorpus(Corpus):
                     except StopIteration:
                         break
                 self.insert_rows(dst_columns, dst_table, tuple_list)
-            j += chunk*cpus
+            j += chunk
             et = time.clock()
             fp.write('%s, %s' % (j, (et-st)))
             fp.flush()
