@@ -333,6 +333,6 @@ class MySQLCorpus(Corpus):
                 self.insert_rows(dst_columns, dst_table, tuple_list)
             j += chunk
             et = time.clock()
-            fp.write('%s, %s' % (j, (et-st)))
+            fp.write('%s, %s\n' % (j, (et-st)))
             fp.flush()
         fp.close()
