@@ -193,6 +193,25 @@ class MySQLCorpus(Corpus):
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_exception(exc_type, exc_value, exc_traceback)
 
+    def make_query(self, columns, table, condition=None, condition_params=None, limit=None, joins=None):
+        query = 'SELECT %s FROM %s'
+        if table is None:
+            return None
+        if columns is None:
+            columns_txt = '*'
+        else:
+            columns_txt = ', '.join(columns)
+        query = query % (columns_txt, table)
+        if joins is not None:
+            query += ' ' + joins
+
+        if condition is not None:
+            query += ' WHERE ' + condition
+
+        if limit is not None:
+            query = query + ' LIMIT %d, %d' % (limit[0], limit[1])
+        return query
+
     def select_rows(self, columns, table, condition=None, condition_params=None, limit=None, joins=None):
         query = 'SELECT %s FROM %s'
         if table is None:
@@ -292,7 +311,13 @@ class MySQLCorpus(Corpus):
         fp = open('data/oldresults.csv', 'w')
         st = time.clock()
         while True:
-            rows = self.select_rows(src_columns, src_table, limit=(j, chunk))
+            query = self.make_query(src_columns, src_table, limit=(j, chunk))
+            cursor = self.cnx.cursor(dictionary=True, buffered=True)
+            cursor.execute(query, None)
+            if cursor.with_rows:
+                rows = cursor.fetchall()
+            else:
+                rows = []
             if len(rows) == 0:
                 break
             for ttuple in transform_tuple_list:
