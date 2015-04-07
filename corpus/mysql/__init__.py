@@ -223,7 +223,7 @@ class MySQLCorpus(Corpus):
             returned_total = []
             start = limit[0]
             end = limit[1]
-            chunk = 10000
+            chunk = 100
             j = start
             while j < end:
                 subquery = '%s LIMIT %d, %d' % (query, j, chunk)
