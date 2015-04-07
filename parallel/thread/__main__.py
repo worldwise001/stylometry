@@ -37,32 +37,38 @@ corpus2 = RedditMySQLCorpus()
 corpus2.setup(**(cred.kwargs))
 corpus2.create()
 
-st = time.clock()
+fp = open('data/results.csv')
 
-dgt = DataGetThread(corpus1, 'SELECT id, body AS text FROM comment', None, limit=1000)
-tt = []
-dgt.start()
-for i in range(0, multiprocessing.cpu_count()):
-    t = TaskThread(fn)
-    tt.append(t)
-    t.start()
+for i in range(1000, 100000, 1000):
 
-dpt = DataPutThread(corpus2, 'INSERT IGNORE INTO tc_read'
-                             '(id, ari, flesch_reading_ease, flesch_kincaid_grade_level,'
-                             'gunning_fog_index, smog_index, coleman_liau_index, lix, rix)'
-                             'VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s)')
-dpt.start()
+    st = time.clock()
 
-dgt.join()
-tprint(('dgt join'))
+    dgt = DataGetThread(corpus1, 'SELECT id, body AS text FROM comment', None, limit=i)
+    tt = []
+    dgt.start()
+    for i in range(0, multiprocessing.cpu_count()):
+        t = TaskThread(fn)
+        tt.append(t)
+        t.start()
 
-for t in tt:
-    t.join()
-    tprint(('task join'))
+    dpt = DataPutThread(corpus2, 'INSERT IGNORE INTO tc_read'
+                                 '(id, ari, flesch_reading_ease, flesch_kincaid_grade_level,'
+                                 'gunning_fog_index, smog_index, coleman_liau_index, lix, rix)'
+                                 'VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s)')
+    dpt.start()
 
-dpt.join()
-tprint(('dpt join'))
+    dgt.join()
+    tprint(('dgt join'))
 
-et = time.clock()
+    for t in tt:
+        t.join()
+        tprint(('task join'))
 
-print('time elapsed: %s' % (et-st))
+    dpt.join()
+    tprint(('dpt join'))
+
+    et = time.clock()
+
+    print('time elapsed: %s' % (et-st))
+    fp.write('%s, %s\n' % (i, et-st))
+fp.close()
