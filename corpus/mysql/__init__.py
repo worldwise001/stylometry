@@ -289,6 +289,8 @@ class MySQLCorpus(Corpus):
         cpus = multiprocessing.cpu_count()
         chunk = 1000
         j = 0
+        fp = open('data/oldresults.csv', 'w')
+        st = time.clock()
         while True:
             rows = self.select_rows(src_columns, src_table, limit=(j, chunk*cpus))
             if len(rows) == 0:
@@ -305,3 +307,7 @@ class MySQLCorpus(Corpus):
                         break
                 self.insert_rows(dst_columns, dst_table, tuple_list)
             j += chunk*cpus
+            et = time.clock()
+            fp.write('%s, %s' % (j, (et-st)))
+            fp.flush()
+        fp.close()

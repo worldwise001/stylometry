@@ -194,6 +194,23 @@ class RedditMySQLCorpus(MySQLCorpus):
                                  (util.extract_read_features_c, read_columns, '`comment_feature_read`')]
         super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
 
+    def gen_test_read(self):
+        read_columns = [ '`id`',
+                         '`ari`',
+                         '`flesch_reading_ease`',
+                         '`flesch_kincaid_grade_level`',
+                         '`gunning_fog_index`',
+                         '`smog_index`',
+                         '`coleman_liau_index`',
+                         '`lix`',
+                         '`rix`' ]
+
+        # process comments
+        src_columns = ['`id`', '`body`']
+        src_table = '`comment`'
+        transform_tuple_list = [ (util.extract_read_features_c, read_columns, '`comment_feature_read`')]
+        super(RedditMySQLCorpus, self).process(src_columns, src_table, transform_tuple_list)
+
     def gen_byte_ngram(self):
         src_columns = ['`id`', '`selftext`']
         src_table = '`submission`'
