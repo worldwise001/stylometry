@@ -40,7 +40,7 @@ if __name__ == '__main__':
     corpus = RedditMySQLCorpus()
     corpus.setup(**(cred.kwargs))
     corpus.create()
-    pool = multiprocessing.Pool(1) #multiprocessing.cpu_count())
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
     print('set up pool')
 
     chunk = 100
