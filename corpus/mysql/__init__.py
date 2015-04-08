@@ -177,6 +177,14 @@ class MySQLCorpus(Corpus):
           );''' % (table_name, table_name))
         self.cnx.commit()
 
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `feature_map` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `type` VARCHAR(8),
+          `feature` VARCHAR(255),
+          UNIQUE `feature_type` (`type`,`feature`)
+          );''')
+        self.cnx.commit()
+
     def run_sql(self, query, params):
         cursor = self.cnx.cursor(dictionary=True)
         while True:
@@ -186,6 +194,26 @@ class MySQLCorpus(Corpus):
                 if cursor.with_rows:
                     #print('Getting rows')
                     return cursor.fetchall()
+                else:
+                    self.cnx.commit()
+                return None
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                traceback.print_exception(exc_type, exc_value, exc_traceback)
+
+    def run_sqls(self, query, params_list):
+        cursor = self.cnx.cursor(dictionary=True)
+        while True:
+            try:
+                #print(query, params)
+                cursor.executemany(query, params_list)
+                if cursor.with_rows:
+                    #print('Getting rows')
+                    return cursor.fetchall()
+                else:
+                    self.cnx.commit()
                 return None
             except (KeyboardInterrupt, SystemExit):
                 raise
@@ -247,6 +275,7 @@ class MySQLCorpus(Corpus):
             while j < end:
                 subquery = '%s LIMIT %d, %d' % (query, j, chunk)
                 try:
+                    print(subquery)
                     cursor.execute(subquery, condition_params)
                     returned = cursor.fetchall()
                     if len(returned) == 0:
@@ -305,19 +334,10 @@ class MySQLCorpus(Corpus):
         self.cnx.commit()
 
     def process(self, src_columns, src_table, transform_tuple_list):
-        cpus = multiprocessing.cpu_count()
-        chunk = 1000
+        chunk = 100
         j = 0
-        fp = open('data/oldresults.csv', 'w')
-        st = time.clock()
         while True:
-            query = self.make_query(src_columns, src_table, limit=(j, chunk))
-            cursor = self.cnx.cursor(dictionary=True, buffered=True)
-            cursor.execute(query, None)
-            if cursor.with_rows:
-                rows = cursor.fetchall()
-            else:
-                rows = []
+            rows = self.select_rows(src_columns, src_table, limit=(j, chunk))
             if len(rows) == 0:
                 break
             for ttuple in transform_tuple_list:
@@ -332,7 +352,3 @@ class MySQLCorpus(Corpus):
                         break
                 self.insert_rows(dst_columns, dst_table, tuple_list)
             j += chunk
-            et = time.clock()
-            fp.write('%s, %s\n' % (j, (et-st)))
-            fp.flush()
-        fp.close()

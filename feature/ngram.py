@@ -10,7 +10,6 @@ def get_words(text):
     clean_words = simple.clean_words(words)
     return words, clean_words
 
-
 def get_byte_ngram(text, n=2, cs=False):
     if not cs:
         text = text.lower()
