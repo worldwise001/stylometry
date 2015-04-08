@@ -72,10 +72,10 @@ def scatter(filename, x, y, line=True, xr=None, yr=None, x_title='', y_title='',
         x_prime = sm.add_constant(x_prime)
         y_hat = est.predict(x_prime)
         line_plot1 = plt.plot(x_prime[:, 1], y_hat, 'r', alpha=0.9, label='r^2 = %s' % est.rsquared)
-        res = linregress(x,y)
-        line_plot2 = plt.plot([min(x), max(x)], [res[0]*min(x)+res[1], res[0]*max(x)+res[1]],
-                              'g', alpha=0.9, label='r^2 = %s' % res[2])
-        plt.legend(handles=[line_plot1, line_plot2], labels=['r^2 = %s' % est.rsquared, 'r^2 = %s' % res[2]])
+        #res = linregress(x,y)
+        #line_plot2 = plt.plot([min(x), max(x)], [res[0]*min(x)+res[1], res[0]*max(x)+res[1]],
+        #                      'g', alpha=0.9, label='r^2 = %s' % res[2])
+        plt.legend(['r^2 = %s' % est.rsquared])
 
     plt.xlabel(x_title)
     plt.ylabel(y_title)
