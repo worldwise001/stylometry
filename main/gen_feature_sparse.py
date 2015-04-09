@@ -1,0 +1,97 @@
+__author__ = 'sharvey'
+
+import multiprocessing
+
+from corpus.mysql.reddit import RedditMySQLCorpus
+from feature import ngram
+from feature import lexical
+import cred
+
+import pprint
+import re
+
+def feature_to_numeric(features):
+    corpus = RedditMySQLCorpus()
+    corpus.setup(**(cred.kwargs))
+    where_clause = 'WHERE '
+    where_list = []
+    for k in features:
+        where_list.append(' (`type` = \'%s\' AND `feature` = \'%s\') '
+                          % (k[0], k[1].replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'')))
+    where_clause += '\n OR'.join(where_list)
+    #print(where_clause)
+    rows = corpus.run_sql('SELECT `id`, `type`, `feature` FROM `feature_map` '+where_clause, None)
+    numeric = {}
+    for row in rows:
+        if (row['type'], row['feature']) not in features:
+            continue
+        numeric[row['id']] = features[(row['type'], row['feature'])]
+    return numeric
+
+def gen_feature(atuple):
+    text = re.sub(r'https?://([a-zA-Z0-9\.\-_]+)[\w\-\._~:/\?#@!\$&\'\*\+,;=%%]*',
+                  '\\1', atuple['text'], flags=re.MULTILINE)
+    featurize = {}
+    bngram = ngram.get_byte_ngrams(text)
+    for n in bngram['ngram_byte']:
+        for k in bngram['ngram_byte'][n]:
+            featurize[('nb%d' % n, k)] = bngram['ngram_byte'][n][k]
+    for n in bngram['ngram_byte_cs']:
+        for k in bngram['ngram_byte_cs'][n]:
+             featurize[('nbcs%d' % n, k)] = bngram['ngram_byte_cs'][n][k]
+    wngram = ngram.get_word_ngrams(text)
+    for n in wngram['ngram_word']:
+        for k in wngram['ngram_word'][n]:
+             featurize[('nw%d' % n, ' '.join(k))] = wngram['ngram_word'][n][k]
+    for n in wngram['ngram_word_clean']:
+        for k in wngram['ngram_word_clean'][n]:
+             featurize[('nwc%d' % n, ' '.join(k))] = wngram['ngram_word_clean'][n][k]
+    words = ngram.get_word_ngram(text, n=1, clean=False)
+    words = { k[0]: words[k] for k in words}
+    for word in words:
+        featurize[('w', word)] = words[word]
+    clean_words = ngram.get_word_ngram(text, n=1, clean=True)
+    clean_words = { k[0]: clean_words[k] for k in clean_words}
+    for word in clean_words:
+        featurize[('cw', word)] = clean_words[word]
+    lex = lexical.get_symbol_dist(text)
+    for k in lex['lex']:
+        featurize[('l', k)] = lex['lex'][k]
+    featurize = feature_to_numeric(featurize)
+    vector = ' '.join(['%d:%d' % (k, featurize[k]) for k in featurize])
+    return (atuple['id'], vector)
+
+if __name__ == '__main__':
+    corpus = RedditMySQLCorpus()
+    corpus.setup(**(cred.kwargs))
+    corpus.create()
+    pool = multiprocessing.Pool(16)
+    print('set up pool')
+
+    chunk = 100
+    j = 0
+    i = 0
+    for reddit in ['worldnews', 'quantum', 'netsec', 'uwaterloo']:
+        while True:
+            print('j=%d' % j)
+            rows = corpus.run_sql('SELECT `comment`.`id` AS `id`, `body` AS `text` FROM `comment` '
+                                  'LEFT JOIN `submission` ON (`comment`.`submission_id`=`submission`.`id`) '
+                                  'LEFT JOIN `reddit` ON (`submission`.`reddit_id`=`reddit`.`id`) '
+                                  'WHERE `reddit`.`name`= \'%s\''
+                                  'LIMIT %d, %d' % (reddit, j, chunk), None)
+            if len(rows) == 0:
+                break
+            #for row in rows:
+            #    atuple = gen_feature(row)
+            #    pprint.pprint(atuple)
+            it = pool.imap_unordered(gen_feature, rows)
+            while True:
+                try:
+                    atuple = it.next()
+                    corpus.run_sql('INSERT IGNORE INTO `comment_sparse_feature` (`id`, `vector`) VALUES (%s, %s)',
+                                   atuple)
+                    i += 1
+                    print('i=%d' % i)
+                except StopIteration:
+                    break
+            j += chunk
