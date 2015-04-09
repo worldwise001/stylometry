@@ -50,7 +50,7 @@ if __name__ == '__main__':
     for reddit in ['worldnews', 'quantum', 'netsec', 'uwaterloo', 'gaming', 'news', 'AskReddit']:
         j = 0
         if reddit == 'worldnews':
-            j = 204000
+            j = 300000
         while True:
             print('j=%d' % j)
             rows = corpus.run_sql('SELECT `body` AS `text` FROM `comment` '
