@@ -13,19 +13,19 @@ import re
 def feature_to_numeric(features):
     corpus = RedditMySQLCorpus()
     corpus.setup(**(cred.kwargs))
-    where_clause = 'WHERE '
     where_list = []
     for k in features:
         where_list.append(' (`type` = \'%s\' AND `feature` = \'%s\') '
                           % (k[0], k[1].replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'')))
-    where_clause += '\n OR'.join(where_list)
-    #print(where_clause)
-    rows = corpus.run_sql('SELECT `id`, `type`, `feature` FROM `feature_map` '+where_clause, None)
     numeric = {}
-    for row in rows:
-        if (row['type'], row['feature']) not in features:
-            continue
-        numeric[row['id']] = features[(row['type'], row['feature'])]
+    for x in range(0, len(features), 100):
+        where_clause = 'WHERE ' + '\n OR'.join(where_list[x:x+100])
+        #print(where_clause)
+        rows = corpus.run_sql('SELECT `id`, `type`, `feature` FROM `feature_map` '+where_clause, None)
+        for row in rows:
+            if (row['type'], row['feature']) not in features:
+                continue
+            numeric[row['id']] = features[(row['type'], row['feature'])]
     return numeric
 
 def gen_feature(atuple):
