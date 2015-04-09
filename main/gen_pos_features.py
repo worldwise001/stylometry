@@ -55,7 +55,7 @@ if __name__ == '__main__':
             print('calc difference')
             new_feature_set.difference_update(feature_set)
             print('difference calced')
-            fp = open('/tmp/sharvey_features', 'w')
+            fp = open('/tmp/sharvey_pos_features', 'w')
             for f in list(new_feature_set):
                 fp.write('\'%s\',\'%s\'\n' % (f[0], f[1].encode('utf-8').replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'')))
             fp.close()
