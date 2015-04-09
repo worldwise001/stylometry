@@ -37,13 +37,7 @@ def gen_feature(atuple):
     for n in bngram['ngram_byte']:
         for k in bngram['ngram_byte'][n]:
             featurize[('nb%d' % n, k)] = bngram['ngram_byte'][n][k]
-    for n in bngram['ngram_byte_cs']:
-        for k in bngram['ngram_byte_cs'][n]:
-             featurize[('nbcs%d' % n, k)] = bngram['ngram_byte_cs'][n][k]
     wngram = ngram.get_word_ngrams(text)
-    for n in wngram['ngram_word']:
-        for k in wngram['ngram_word'][n]:
-             featurize[('nw%d' % n, ' '.join(k))] = wngram['ngram_word'][n][k]
     for n in wngram['ngram_word_clean']:
         for k in wngram['ngram_word_clean'][n]:
              featurize[('nwc%d' % n, ' '.join(k))] = wngram['ngram_word_clean'][n][k]
@@ -51,10 +45,6 @@ def gen_feature(atuple):
     words = { k[0]: words[k] for k in words}
     for word in words:
         featurize[('w', word)] = words[word]
-    clean_words = ngram.get_word_ngram(text, n=1, clean=True)
-    clean_words = { k[0]: clean_words[k] for k in clean_words}
-    for word in clean_words:
-        featurize[('cw', word)] = clean_words[word]
     lex = lexical.get_symbol_dist(text)
     for k in lex['lex']:
         featurize[('l', k)] = lex['lex'][k]
@@ -91,7 +81,7 @@ if __name__ == '__main__':
             while True:
                 try:
                     atuple = it.next()
-                    corpus.run_sql('INSERT IGNORE INTO `comment_sparse_feature` (`id`, `vector`) VALUES (%s, %s)',
+                    corpus.run_sql('INSERT IGNORE INTO `comment_sparse_feature1` (`id`, `vector`) VALUES (%s, %s)',
                                    atuple)
                     i += 1
                     print('i=%d' % i)
