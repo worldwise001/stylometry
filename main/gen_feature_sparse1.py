@@ -22,7 +22,7 @@ def feature_to_numeric(features):
     for x in range(0, len(features), 100):
         where_clause = 'WHERE ' + '\n OR'.join(where_list[x:x+100])
         #print(where_clause)
-        rows = corpus.run_sql('SELECT `id`, `type`, `feature` FROM `feature_map` '+where_clause, None)
+        rows = corpus.run_sql('SELECT `id`, `type`, `feature` FROM `feature_map_test` '+where_clause, None)
         for row in rows:
             if (row['type'], row['feature']) not in features:
                 continue
