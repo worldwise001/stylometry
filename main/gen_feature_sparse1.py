@@ -62,9 +62,9 @@ if __name__ == '__main__':
     print('set up pool')
 
     chunk = 100
-    j = 0
-    i = 0
     for reddit in ['worldnews', 'quantum', 'netsec', 'uwaterloo']:
+        j = 0
+        i = 0
         while True:
             print('j=%d' % j)
             rows = corpus.run_sql('SELECT `comment`.`id` AS `id`, `body` AS `text` FROM `comment` '
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                     corpus.run_sql('INSERT IGNORE INTO `comment_sparse_feature1` (`id`, `vector`) VALUES (%s, %s)',
                                    atuple)
                     i += 1
-                    print('i=%d' % i)
+                    #print('i=%d' % i)
                 except StopIteration:
                     break
             j += chunk
