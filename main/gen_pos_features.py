@@ -59,7 +59,7 @@ if __name__ == '__main__':
             for f in list(new_feature_set):
                 fp.write('\'%s\',\'%s\'\n' % (f[0], f[1].encode('utf-8').replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'')))
             fp.close()
-            query = 'LOAD DATA INFILE \'/tmp/sharvey_features\' IGNORE INTO TABLE `feature_map_test` '\
+            query = 'LOAD DATA INFILE \'/tmp/sharvey_pos_features\' IGNORE INTO TABLE `feature_map_test` '\
                            'FIELDS TERMINATED BY \',\' OPTIONALLY ENCLOSED BY \'\\\'\' '\
                            'LINES TERMINATED BY \'\\n\' ' \
                            '(`type`, `feature`)'
