@@ -49,7 +49,7 @@ if __name__ == '__main__':
     chunk = 100
     j = 0
     feature_set = set()
-    for reddit in ['worldnews', 'news', 'quantum', 'netsec', 'uwaterloo', 'gaming']:
+    for reddit in ['worldnews', 'quantum', 'netsec', 'uwaterloo', 'gaming', 'news', 'AskReddit']:
         while True:
             print(j)
             rows = corpus.run_sql('SELECT `body` AS `text` FROM `comment` '
