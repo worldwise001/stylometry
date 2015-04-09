@@ -36,22 +36,21 @@ def gen_feature(atuple):
     lex = lexical.get_symbol_dist(text)
     for k in lex['lex']:
         aset.add(('l', k))
-    #pprint.pprint(aset)
     return set(aset)
 
 if __name__ == '__main__':
     corpus = RedditMySQLCorpus()
     corpus.setup(**(cred.kwargs))
     corpus.create()
-    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    pool = multiprocessing.Pool(2)
     print('set up pool')
 
-    chunk = 100
+    chunk = 200
     j = 0
     feature_set = set()
     for reddit in ['worldnews', 'quantum', 'netsec', 'uwaterloo', 'gaming', 'news', 'AskReddit']:
         while True:
-            print(j)
+            print('j=%d' % j)
             rows = corpus.run_sql('SELECT `body` AS `text` FROM `comment` '
                                   'LEFT JOIN `submission` ON (`comment`.`submission_id`=`submission`.`id`) '
                                   'LEFT JOIN `reddit` ON (`submission`.`reddit_id`=`reddit`.`id`) '
@@ -59,7 +58,7 @@ if __name__ == '__main__':
                                   'LIMIT %d, %d' % (reddit, j, chunk), None)
             if len(rows) == 0:
                 break
-            it = pool.imap_unordered(gen_feature, rows, 100)
+            it = pool.imap_unordered(gen_feature, rows)
             new_feature_set = set()
             while True:
                 try:
@@ -67,9 +66,21 @@ if __name__ == '__main__':
                     new_feature_set = new_feature_set.union(atuple)
                 except StopIteration:
                     break
+            print('calc difference')
             new_feature_set.difference_update(feature_set)
-            pprint.pprint(len(new_feature_set))
-            corpus.run_sqls('INSERT IGNORE INTO `feature_map` (`type`, `feature`) VALUES (%s, %s)', list(new_feature_set))
-            corpus.cnx.commit()
+            print('difference calced')
+            fp = open('/tmp/sharvey_features', 'w')
+            for f in list(new_feature_set):
+                fp.write('\'%s\',\'%s\'\n' % (f[0], f[1].encode('utf-8').replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'')))
+            fp.close()
+            corpus.run_sql('LOCK TABLES `feature_map_test` WRITE', None)
+            query = 'LOAD DATA INFILE \'/tmp/sharvey_features\' IGNORE INTO TABLE `feature_map_test` '\
+                           'FIELDS TERMINATED BY \',\' OPTIONALLY ENCLOSED BY \'\\\'\' '\
+                           'LINES TERMINATED BY \'\\n\' ' \
+                           '(`type`, `feature`)'
+            print(query)
+            corpus.run_sql(query, None)
+            corpus.run_sql('UNLOCK TABLES', None)
+            #pprint.pprint(len(new_feature_set))
             feature_set = feature_set.union(new_feature_set)
             j += chunk

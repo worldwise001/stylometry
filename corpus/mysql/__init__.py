@@ -185,9 +185,24 @@ class MySQLCorpus(Corpus):
           );''')
         self.cnx.commit()
 
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `feature_map_test` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `type` VARCHAR(8),
+          `feature` VARCHAR(255),
+          UNIQUE `feature_type` (`type`,`feature`)
+          );''')
+        self.cnx.commit()
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_sparse_feature` (
           `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-          `vector` TEXT,
+          `vector` MEDIUMTEXT,
+          FOREIGN KEY (`id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+          );''' % (table_name, table_name))
+        self.cnx.commit()
+
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_sparse_feature1` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `vector` MEDIUMTEXT,
           FOREIGN KEY (`id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
           );''' % (table_name, table_name))
         self.cnx.commit()
