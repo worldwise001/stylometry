@@ -36,7 +36,7 @@ if __name__ == '__main__':
         j = 0
         while True:
             print('j=%d' % j)
-            rows = corpus.run_sql('SELECT `pos` AS `text` FROM `comment_pos` '
+            rows = corpus.run_sql('SELECT `body_pos` AS `text` FROM `comment_pos` '
                                   'LEFT JOIN `comment` ON (`comment`.`id`=`comment_pos`.`id`) '
                                   'LEFT JOIN `submission` ON (`comment`.`submission_id`=`submission`.`id`) '
                                   'LEFT JOIN `reddit` ON (`submission`.`reddit_id`=`reddit`.`id`) '
