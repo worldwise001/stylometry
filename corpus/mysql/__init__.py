@@ -185,6 +185,13 @@ class MySQLCorpus(Corpus):
           );''')
         self.cnx.commit()
 
+        cursor.execute('''CREATE TABLE IF NOT EXISTS `%s_sparse_feature` (
+          `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+          `vector` TEXT,
+          FOREIGN KEY (`id`) REFERENCES `%s` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+          );''' % (table_name, table_name))
+        self.cnx.commit()
+
     def run_sql(self, query, params):
         cursor = self.cnx.cursor(dictionary=True)
         while True:

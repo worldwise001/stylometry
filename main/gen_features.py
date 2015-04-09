@@ -46,22 +46,27 @@ if __name__ == '__main__':
     chunk = 100
     j = 0
     feature_set = set()
-    while True:
-        print(j)
-        rows = corpus.run_sql('SELECT `body` AS `text` FROM `comment` LIMIT %d, %d' % (j, chunk), None)
-        if len(rows) == 0:
-            break
-        it = pool.imap_unordered(gen_feature, rows, 100)
-        new_feature_set = set()
+    for reddit in ['worldnews', 'news', 'quantum', 'netsec', 'uwaterloo', 'gaming', 'askreddit ']:
         while True:
-            try:
-                atuple = it.next()
-                new_feature_set = new_feature_set.union(atuple)
-            except StopIteration:
+            print(j)
+            rows = corpus.run_sql('SELECT `body` AS `text` FROM `comment` '
+                                  'LEFT JOIN `submission` ON (`comment`.`submission_id`=`submission`.`id`) '
+                                  'LEFT JOIN `reddit` ON (`submission`.`reddit_id`=`reddit`.`id`) '
+                                  'WHERE `reddit`.`name`= \'%s\''
+                                  'LIMIT %d, %d' % (reddit, j, chunk), None)
+            if len(rows) == 0:
                 break
-        new_feature_set.difference_update(feature_set)
-        pprint.pprint(len(new_feature_set))
-        corpus.run_sqls('INSERT IGNORE INTO `feature_map` (`type`, `feature`) VALUES (%s, %s)', list(new_feature_set))
-        corpus.cnx.commit()
-        feature_set = feature_set.union(new_feature_set)
-        j += chunk
+            it = pool.imap_unordered(gen_feature, rows, 100)
+            new_feature_set = set()
+            while True:
+                try:
+                    atuple = it.next()
+                    new_feature_set = new_feature_set.union(atuple)
+                except StopIteration:
+                    break
+            new_feature_set.difference_update(feature_set)
+            pprint.pprint(len(new_feature_set))
+            corpus.run_sqls('INSERT IGNORE INTO `feature_map` (`type`, `feature`) VALUES (%s, %s)', list(new_feature_set))
+            corpus.cnx.commit()
+            feature_set = feature_set.union(new_feature_set)
+            j += chunk
